@@ -1,0 +1,1734 @@
+{
+  "name": "[ETL-qianchuan]投放数据采集",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dd124f1a-bcad-4ab3-ba6b-12f92b09fb7c",
+              "name": "app_id",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "0f002b25-a0bb-47e1-a0c6-1e7e880910cb",
+              "name": "secret",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "728f0df4-5e32-4354-af8e-607d729b9f0c",
+              "name": "=refresh_token",
+              "value": "={{ $json.refresh_token }}",
+              "type": "string"
+            },
+            {
+              "id": "0cf23071-a468-4d81-be72-cc183c709413",
+              "name": "Content-Type",
+              "value": "=application/json",
+              "type": "string"
+            },
+            {
+              "id": "3bd17fe6-a4db-4077-a2c2-a6b9e588fd4a",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        1248
+      ],
+      "id": "ae5377ae-a690-40c2-9fb1-659b9fd5818b",
+      "name": "巨量千川参数配置"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.oceanengine.com/open_api/oauth2/refresh_token/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"app_id\": ,\n  \"secret\": \"\",\n  \"refresh_token\": \"{{ $json.refresh_token }}\"\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        608,
+        1248
+      ],
+      "id": "727df699-0d1e-45be-9bbb-037eefc6a305",
+      "name": "刷新Access Token",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dad07f5e-6960-43a7-bea2-fa93b37f5e10",
+              "name": "platfrom",
+              "value": "巨量千川",
+              "type": "string"
+            },
+            {
+              "id": "a7136aca-bbda-41d0-8da2-e065cd8dfece",
+              "name": "access_token",
+              "value": "={{ $json.data.access_token }}",
+              "type": "string"
+            },
+            {
+              "id": "c96cdd53-d53f-4cba-abce-1fa793935ff1",
+              "name": "refresh_token",
+              "value": "={{ $json.data.refresh_token }}",
+              "type": "string"
+            },
+            {
+              "id": "104ec242-ac94-4a27-8f32-ad5ed011c3e6",
+              "name": "expires_at",
+              "value": "={{ $json.data.expires_in }}",
+              "type": "number"
+            },
+            {
+              "id": "aaa90c69-d2b0-4b7e-b52a-2aefe362834a",
+              "name": "refresh_expires_at",
+              "value": "={{ $json.data.refresh_token_expires_in }}",
+              "type": "number"
+            },
+            {
+              "id": "9c5f76f6-390f-4d1b-8e53-a69bec764688",
+              "name": "start_time",
+              "value": "={{ $today.minus({ days: 1 }).format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "ca0eef33-7b07-4e00-a5a4-6819523f2bed",
+              "name": "end_time",
+              "value": "={{ $today.format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        1248
+      ],
+      "id": "cf066b48-cd54-4aac-a5ae-8417e6c34d77",
+      "name": "配置请求参数"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b090717c-857a-49c1-a973-c648792c15a0",
+              "leftValue": "={{ (new Date($json.updated_at).getTime() / 1000 + $json.expires_at) - $now.toUnixInteger() > 7200 }}",
+              "rightValue": "=true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        1024
+      ],
+      "id": "ebc3b78e-461e-44c0-bb47-9ec2bd83b755",
+      "name": "Access Token是否有效"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM sys_auth_tokens WHERE platfrom = '巨量千川';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        384,
+        1024
+      ],
+      "id": "cf94f2ec-32f2-4151-8898-e49287fce180",
+      "name": "巨量千川token查询",
+      "credentials": {
+        "mySql": {
+          "id": "WywhHIXm1gxfGnUt",
+          "name": "API_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f3966c69-d05b-44a7-a1f4-1e01cb56e4fb",
+              "name": "start_time",
+              "value": "={{ $today.minus({ days: 1 }).format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "f40597ec-4e4c-4501-92f2-2cf9ff828ef8",
+              "name": "end_time",
+              "value": "={{ $today.format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "08a7cc50-670c-4c4c-a8c3-6342b59f2331",
+              "name": "access_token",
+              "value": "={{ $json.access_token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        1008
+      ],
+      "id": "233f69b6-9cab-4f81-ba15-c0d68affc6fb",
+      "name": "配置请求参数1"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - Edit 组合并划分每次请求参数 ==========\n// 输入：时间拆分节点输出的多条 item，每条仅 { start_time, end_time }\n//       token 从「查库取Token」或刷新分支的节点取（见下方 tokenSource 配置）\n// 输出：多条 item，每条 = 一次 API 请求的完整参数（时间段 × 账户 × data_topic）\n//       下游按 data_topic 分三路（LIVE/VIDEO/OTHER）接三个 HTTP 请求节点\n\nconst DATA_TOPIC = {\n  LIVE: \"SITE_PROMOTION_POST_DATA_LIVE\",\n  VIDEO: \"SITE_PROMOTION_POST_DATA_VIDEO\",\n  OTHER: \"SITE_PROMOTION_POST_DATA_OTHER\"\n};\n\n// 账户列表：与 Python accounts_to_fetch 一致，按需修改\nconst ACCOUNTS = [\n  { advertiser_id: \"1810151981662283\", aweme_id: \"95882467048\", account_name: \"地理八分钟\" },\n  { advertiser_id: \"1841239871244042\", aweme_id: \"1748646316999804\", account_name: \"历史八分钟\" },\n  { advertiser_id: \"1841239871244042\", aweme_id: \"2817420429893860\", account_name: \"会员直播间\" },\n  { advertiser_id: \"1854815081234699\", aweme_id: \"96940362400\", account_name: \"乐乐伴学\" },\n  { advertiser_id: \"1854731147621504\", aweme_id: \"2817420429893860\", account_name: \"会员直播间\" },\n  { advertiser_id: \"1854730832145883\", aweme_id: \"7467699792727917625\", account_name: \"三五小星世界历史\" }\n];\n\nconst LIVE_DIMS = [\"anchor_id\", \"stat_time_day\", \"roi2_material_anchor_name\"];\nconst LIVE_IND_KEYS = [\n  \"live_show_count_exclude_video_for_roi2\", \"live_watch_count_exclude_video_for_roi2\",\n  \"live_cvr_rate_exclude_video_for_roi2\", \"live_convert_rate_exclude_video_for_roi2\",\n  \"total_pay_order_count_for_roi2_fork\", \"total_prepay_order_count_for_roi2_fork\",\n  \"total_pay_order_gmv_include_coupon_for_roi2_fork\", \"total_pay_order_gmv_for_roi2_fork\",\n  \"total_prepay_order_gmv_for_roi2_fork\", \"total_unfinished_estimate_order_gmv_for_roi2_fork\",\n  \"stat_cost_for_roi2_fork\", \"basic_stat_cost_for_roi2_v2_fork\", \"live_exclude_video_ecpm_for_roi2\",\n  \"live_exclude_video_cpc_for_roi2\", \"total_cost_per_pay_order_for_roi2_fork\",\n  \"total_prepay_and_pay_order_roi2_fork\", \"total_pay_order_coupon_amount_for_roi2_fork\",\n  \"total_ecom_platform_subsidy_amount_for_roi2_fork\", \"total_prepay_and_pay_settle_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_overall_roi2_1h\", \"total_prepay_and_pay_settle_overall_roi2_1h\",\n  \"total_order_settle_amount_for_roi2_1h\", \"total_order_settle_count_for_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_roi2_1h\", \"total_order_real_settle_amount_for_roi2_1h\",\n  \"no_refund_ecom_coupon_amount_for_roi2\", \"no_refund_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_order_settle_amount_rate_for_roi2_1h\", \"total_order_settle_count_rate_for_roi2_1h\",\n  \"total_refund_order_count_for_roi2_1h\", \"total_refund_order_gmv_for_roi2_1h_all\",\n  \"total_refund_order_gmv_for_roi2_1h_rate\", \"total_prepay_and_pay_settle_roi2_7d\",\n  \"total_order_settle_amount_for_roi2_7d\", \"total_order_settle_count_for_roi2_7d\",\n  \"total_cost_per_pay_order_settle_for_roi2_7d\", \"total_order_settle_amount_rate_for_roi2_7d\",\n  \"total_order_settle_count_rate_for_roi2_7d\", \"total_prepay_and_pay_settle_roi2_14d\",\n  \"total_order_settle_amount_for_roi2_14d\", \"total_order_settle_count_for_roi2_14d\",\n  \"total_cost_per_pay_order_settle_for_roi2_14d\", \"total_order_settle_amount_rate_for_roi2_14d\",\n  \"total_order_settle_count_rate_for_roi2_14d\", \"total_prepay_and_pay_settle_roi2_30d\",\n  \"total_order_settle_amount_for_roi2_30d\", \"total_order_settle_count_for_roi2_30d\",\n  \"total_cost_per_pay_order_settle_for_roi2_30d\", \"total_order_settle_amount_rate_for_roi2_30d\",\n  \"total_order_settle_count_rate_for_roi2_30d\", \"total_prepay_and_pay_settle_roi2_90d\",\n  \"total_order_settle_amount_for_roi2_90d\", \"total_order_settle_count_for_roi2_90d\",\n  \"total_cost_per_pay_order_settle_for_roi2_90d\", \"total_order_settle_amount_rate_for_roi2_90d\",\n  \"total_order_settle_count_rate_for_roi2_90d\", \"live_follow_count_for_roi2\",\n  \"live_comment_count_for_roi2\", \"live_like_count_for_roi2\",\n  \"additional_delivery_stat_cost_for_roi2_assist\", \"additional_delivery_total_pay_order_count_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_include_coupon_for_roi2_assist\", \"additional_delivery_total_prepay_and_pay_order_roi2_assist\",\n  \"additional_delivery_show_cnt_for_roi2_assist\", \"additional_delivery_ctr_for_roi2_assist\",\n  \"additional_delivery_click_cnt_for_roi2_assist\", \"additional_delivery_convert_rate_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_for_roi2_assist\", \"additional_delivery_total_pay_order_coupon_amount_for_roi2_assist\",\n  \"additional_delivery_total_ecom_platform_subsidy_amount_for_roi2_assist\", \"additional_delivery_total_unfinished_estimate_order_gmv_for_roi2_assist\",\n  \"additional_delivery_pay_convert_cost_for_roi2_assist_v2\", \"additional_delivery_pay_convert_cnt_for_roi2_assist_v2\",\n  \"stat_cost_for_overall_roi2\"\n];\n\nconst VIDEO_DIMS = [\"stat_time_day\", \"roi2_material_video_name\", \"roi2_material_video_type\", \"material_id\", \"material_create_time_v2\", \"roi2_material_upload_time\"];\nconst VIDEO_IND_KEYS = [\n  \"live_show_count_for_roi2_v2\", \"live_watch_count_for_roi2_v2\", \"live_cvr_rate_for_roi2_v2\", \"live_convert_rate_for_roi2_v2\",\n  \"total_pay_order_count_for_roi2\", \"total_pay_order_gmv_include_coupon_for_roi2\", \"total_pay_order_gmv_rate_for_roi2\",\n  \"stat_cost_for_roi2\", \"cost_rate_for_roi2\", \"basic_stat_cost_for_roi2_v2\", \"total_prepay_and_pay_order_roi2\",\n  \"total_cost_per_pay_order_for_roi2\", \"total_pay_order_gmv_for_roi2\", \"total_ecpm_for_roi2\", \"total_cpc_for_roi2\",\n  \"total_pay_order_coupon_amount_for_roi2\", \"total_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_prepay_order_count_for_roi2\", \"total_prepay_order_gmv_for_roi2\", \"total_unfinished_estimate_order_gmv_for_roi2\",\n  \"stat_cost_for_overall_roi2\", \"total_prepay_and_pay_settle_overall_roi2_1h\", \"total_cost_per_pay_order_settle_for_overall_roi2_1h\",\n  \"total_prepay_and_pay_settle_roi2_1h\", \"total_order_settle_amount_for_roi2_1h\", \"total_order_settle_count_for_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_roi2_1h\", \"total_order_real_settle_amount_for_roi2_1h\",\n  \"no_refund_ecom_coupon_amount_for_roi2\", \"no_refund_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_order_settle_amount_rate_for_roi2_1h\", \"total_order_settle_count_rate_for_roi2_1h\",\n  \"total_refund_order_count_for_roi2_1h\", \"total_refund_order_gmv_for_roi2_1h_all\", \"total_refund_order_gmv_for_roi2_1h_rate\",\n  \"total_prepay_and_pay_settle_roi2_7d\", \"total_order_settle_amount_for_roi2_7d\", \"total_order_settle_count_for_roi2_7d\",\n  \"total_cost_per_pay_order_settle_for_roi2_7d\", \"total_order_settle_amount_rate_for_roi2_7d\", \"total_order_settle_count_rate_for_roi2_7d\",\n  \"total_prepay_and_pay_settle_roi2_14d\", \"total_order_settle_amount_for_roi2_14d\", \"total_order_settle_count_for_roi2_14d\",\n  \"total_cost_per_pay_order_settle_for_roi2_14d\", \"total_order_settle_amount_rate_for_roi2_14d\", \"total_order_settle_count_rate_for_roi2_14d\",\n  \"total_prepay_and_pay_settle_roi2_30d\", \"total_order_settle_amount_for_roi2_30d\", \"total_order_settle_count_for_roi2_30d\",\n  \"total_cost_per_pay_order_settle_for_roi2_30d\", \"total_order_settle_amount_rate_for_roi2_30d\", \"total_order_settle_count_rate_for_roi2_30d\",\n  \"total_prepay_and_pay_settle_roi2_90d\", \"total_order_settle_amount_for_roi2_90d\", \"total_order_settle_count_for_roi2_90d\",\n  \"total_cost_per_pay_order_settle_for_roi2_90d\", \"total_order_settle_amount_rate_for_roi2_90d\", \"total_order_settle_count_rate_for_roi2_90d\",\n  \"video_like_count_for_roi2\", \"video_follow_count_for_roi2\", \"video_avg_watch_duration_for_roi2\",\n  \"video_play_count_for_roi2_v2\", \"video_play_finish_count_for_roi2_v2\", \"video_play_finish_rate_for_roi2_v2\",\n  \"video_comment_count_for_roi2_v2\", \"video_play_duration_2s_rate_for_roi2\", \"video_play_duration_3s_rate_for_roi2\",\n  \"video_play_duration_5s_rate_for_roi2\", \"video_play_duration_10s_rate_for_roi2\",\n  \"heat_stat_cost_for_roi2\", \"heat_total_pay_order_count_for_roi2\", \"heat_total_pay_order_gmv_for_roi2\", \"heat_total_prepay_and_pay_order_roi2\",\n  \"additional_delivery_stat_cost_for_roi2_assist\", \"additional_delivery_total_pay_order_count_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_include_coupon_for_roi2_assist\", \"additional_delivery_total_prepay_and_pay_order_roi2_assist\",\n  \"additional_delivery_show_cnt_for_roi2_assist\", \"additional_delivery_ctr_for_roi2_assist\", \"additional_delivery_click_cnt_for_roi2_assist\",\n  \"additional_delivery_convert_rate_for_roi2_assist\", \"additional_delivery_total_pay_order_gmv_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_coupon_amount_for_roi2_assist\", \"additional_delivery_total_ecom_platform_subsidy_amount_for_roi2_assist\",\n  \"additional_delivery_total_unfinished_estimate_order_gmv_for_roi2_assist\", \"additional_delivery_pay_convert_cost_for_roi2_assist_v2\",\n  \"additional_delivery_pay_convert_cnt_for_roi2_assist_v2\"\n];\n\nconst OTHER_DIMS = [\"roi2_other_creative_name\", \"stat_time_day\"];\nconst OTHER_IND_KEYS = [\n  \"total_pay_order_count_for_roi2\", \"total_pay_order_gmv_include_coupon_for_roi2\", \"total_pay_order_gmv_rate_for_roi2\",\n  \"total_pay_order_gmv_for_roi2\", \"total_pay_order_coupon_amount_for_roi2\", \"total_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_prepay_order_count_for_roi2\", \"total_prepay_order_gmv_for_roi2\", \"total_unfinished_estimate_order_gmv_for_roi2\"\n];\n\nfunction buildParams(segment, account, dataTopic, accessToken) {\n  const advertiser_id = account.advertiser_id;\n  const aweme_id = account.aweme_id || \"\";\n  const start_time = segment.start_time;\n  const end_time = segment.end_time;\n  const page = 1;\n  const page_size = 100;\n\n  let dimensions, filters, metrics, order_by;\n\n  if (dataTopic === DATA_TOPIC.LIVE) {\n    dimensions = JSON.stringify(LIVE_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(LIVE_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }]);\n  } else if (dataTopic === DATA_TOPIC.VIDEO) {\n    dimensions = JSON.stringify(VIDEO_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(VIDEO_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }, { field: \"material_id\", type: 1 }]);\n  } else {\n    dimensions = JSON.stringify(OTHER_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(OTHER_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }]);\n  }\n\n  return {\n    access_token: accessToken,\n    advertiser_id,\n    aweme_id,\n    account_name: account.account_name,\n    data_topic: dataTopic,\n    start_time,\n    end_time,\n    dimensions,\n    filters,\n    metrics,\n    order_by,\n    page,\n    page_size\n  };\n}\n\n// ---------- n8n 入口 ----------\n// Token 来源：优先「查库取Token」；需要刷新时从「Token刷新」HTTP 节点取 data.access_token，或从刷新分支上的 Set/Code（如「构造Token」）取 access_token；也可用上游 item 或环境变量（请按实际节点名修改）\n// const tokenFromDb = $(巨量千川token查询')?.first()?.json?.access_token;\n// const tokenFromRefreshNode = $('Token刷新')?.first()?.json?.data?.access_token;\n// const tokenFromSet = $('构造Token')?.first()?.json?.access_token;\n// const tokenFromInput = $input.first()?.json?.access_token;\n// const accessToken = tokenFromDb || tokenFromRefreshNode || tokenFromSet || tokenFromInput || $env?.OCEAN_ENGINE_ACCESS_TOKEN;\nconst accessToken = $input.first().json.access_token\n\nif (!accessToken) {\n  throw new Error(\"缺少 access_token，请确保上游有「查库取Token」或「刷新后写回库」节点，或在本流程前提供 access_token\");\n}\n\n// 时间拆分节点输出的多条 item（每条只有 start_time, end_time，可能带 mode 等）\nconst timeSegments = $input.all().map((i) => i.json);\n\nconst topics = [DATA_TOPIC.LIVE, DATA_TOPIC.VIDEO, DATA_TOPIC.OTHER];\nconst out = [];\n\nfor (const segment of timeSegments) {\n  for (const account of ACCOUNTS) {\n    for (const dataTopic of topics) {\n      out.push({ json: buildParams(segment, account, dataTopic, accessToken) });\n    }\n  }\n}\n\nreturn out;\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '组合请求参数' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        1008
+      ],
+      "id": "859aa2b4-fb0e-4c4e-8e04-377e5f02b8f8",
+      "name": "组合请求参数"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1ede0f22-8275-4016-998f-65f2b1661678",
+              "leftValue": "={{ $json.data_topic }}",
+              "rightValue": "SITE_PROMOTION_POST_DATA_VIDEO",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2080,
+        1024
+      ],
+      "id": "f7551a0a-b6a5-410f-aa35-a488f06037ea",
+      "name": "是否视频接口"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c5116443-4f18-45d8-be20-007f61fc2241",
+              "leftValue": "={{ $json.data_topic }}",
+              "rightValue": "SITE_PROMOTION_POST_DATA_LIVE",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1824,
+        1008
+      ],
+      "id": "b050cae6-536f-4f75-9493-3eeb2fbcab96",
+      "name": "是否直播画面接口"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": {
+          "__rl": true,
+          "value": "sys_auth_tokens",
+          "mode": "list",
+          "cachedResultName": "sys_auth_tokens"
+        },
+        "dataMode": "defineBelow",
+        "columnToMatchOn": "platfrom",
+        "valueToMatchOn": "={{ $json.platfrom }}",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "access_token",
+              "value": "={{ $json.access_token }}"
+            },
+            {
+              "column": "refresh_token",
+              "value": "={{ $json.refresh_token }}"
+            },
+            {
+              "column": "expires_at",
+              "value": "={{ $json.expires_at }}"
+            },
+            {
+              "column": "refresh_expires_at",
+              "value": "={{ $json.refresh_expires_at }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1328,
+        1248
+      ],
+      "id": "1d8ce26e-a08c-4263-8c82-a3a8e1e68edb",
+      "name": "有效token写回数据库",
+      "credentials": {
+        "mySql": {
+          "id": "WywhHIXm1gxfGnUt",
+          "name": "API_data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 100,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2384,
+        752
+      ],
+      "id": "47cec5c2-fe68-4d76-bd49-7e5c892869db",
+      "name": "分批导入直播画面数据",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2368,
+        1008
+      ],
+      "id": "41464fa5-208f-4efd-9d2c-428eeb73d045",
+      "name": "分批导入视频数据"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2368,
+        1264
+      ],
+      "id": "0e5d5eed-d28e-474d-a791-cecc64be12ac",
+      "name": "分批导入其它创意数据"
+    },
+    {
+      "parameters": {
+        "url": "https://api.oceanengine.com/open_api/v1.0/qianchuan/report/uni_promotion/data/get/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "advertiser_id",
+              "value": "={{ $json.advertiser_id }}"
+            },
+            {
+              "name": "data_topic",
+              "value": "={{ $json.data_topic }}"
+            },
+            {
+              "name": "dimensions",
+              "value": "={{ $json.dimensions }}"
+            },
+            {
+              "name": "start_time",
+              "value": "={{ $json.start_time }}"
+            },
+            {
+              "name": "end_time",
+              "value": "={{ $json.end_time }}"
+            },
+            {
+              "name": "filters",
+              "value": "={{ $json.filters }}"
+            },
+            {
+              "name": "metrics",
+              "value": "={{ $json.metrics }}"
+            },
+            {
+              "name": "order_by",
+              "value": "={{ $json.order_by }}"
+            },
+            {
+              "name": "page",
+              "value": "={{ $json.page }}"
+            },
+            {
+              "name": "page_size",
+              "value": "={{ $json.page_size }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Access-Token",
+              "value": "={{ $json.access_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2640,
+        768
+      ],
+      "id": "57f3600d-5d7d-4407-8c82-2e118fb8c4ce",
+      "name": "获取直播画面分钟级数据",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "url": "https://api.oceanengine.com/open_api/v1.0/qianchuan/report/uni_promotion/data/get/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "advertiser_id",
+              "value": "={{ $json.advertiser_id }}"
+            },
+            {
+              "name": "data_topic",
+              "value": "={{ $json.data_topic }}"
+            },
+            {
+              "name": "dimensions",
+              "value": "={{ $json.dimensions }}"
+            },
+            {
+              "name": "start_time",
+              "value": "={{ $json.start_time }}"
+            },
+            {
+              "name": "end_time",
+              "value": "={{ $json.end_time }}"
+            },
+            {
+              "name": "filters",
+              "value": "={{ $json.filters }}"
+            },
+            {
+              "name": "metrics",
+              "value": "={{ $json.metrics }}"
+            },
+            {
+              "name": "order_by",
+              "value": "={{ $json.order_by }}"
+            },
+            {
+              "name": "page",
+              "value": "={{ $json.page }}"
+            },
+            {
+              "name": "page_size",
+              "value": "={{ $json.page_size }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Access-Token",
+              "value": "={{ $json.access_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2640,
+        1024
+      ],
+      "id": "c8b18ed0-5fc4-4567-9bfb-6e1fe1ae7647",
+      "name": "获取视频投放分钟级数据",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "url": "https://api.oceanengine.com/open_api/v1.0/qianchuan/report/uni_promotion/data/get/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "advertiser_id",
+              "value": "={{ $json.advertiser_id }}"
+            },
+            {
+              "name": "data_topic",
+              "value": "={{ $json.data_topic }}"
+            },
+            {
+              "name": "dimensions",
+              "value": "={{ $json.dimensions }}"
+            },
+            {
+              "name": "start_time",
+              "value": "={{ $json.start_time }}"
+            },
+            {
+              "name": "end_time",
+              "value": "={{ $json.end_time }}"
+            },
+            {
+              "name": "filters",
+              "value": "={{ $json.filters }}"
+            },
+            {
+              "name": "metrics",
+              "value": "={{ $json.metrics }}"
+            },
+            {
+              "name": "order_by",
+              "value": "={{ $json.order_by }}"
+            },
+            {
+              "name": "page",
+              "value": "={{ $json.page }}"
+            },
+            {
+              "name": "page_size",
+              "value": "={{ $json.page_size }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Access-Token",
+              "value": "={{ $json.access_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2640,
+        1280
+      ],
+      "id": "44541c89-27ad-43b0-bbcb-aea83432d8ec",
+      "name": "获取其它创意分钟级数据",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - 直播画面 解析并清洗 ==========\nconst LIVE_DIM_MAPPING = {\n  stat_time_day: \"统计日期\",\n  anchor_id: \"主播ID\",\n  roi2_material_anchor_name: \"主播名称\",\n};\n\nconst LIVE_IND_MAPPING = {\n  live_show_count_exclude_video_for_roi2: \"整体展示次数\",\n  live_watch_count_exclude_video_for_roi2: \"整体点击次数\",\n  live_cvr_rate_exclude_video_for_roi2: \"整体点击率(%)\",\n  live_convert_rate_exclude_video_for_roi2: \"整体转化率(%)\",\n  total_pay_order_count_for_roi2_fork: \"整体成交订单数\",\n  total_prepay_order_count_for_roi2_fork: \"整体预售订单数\",\n  total_pay_order_gmv_include_coupon_for_roi2_fork: \"整体成交金额(含优惠券/补贴)\",\n  total_pay_order_gmv_for_roi2_fork: \"用户实际支付金额\",\n  total_prepay_order_gmv_for_roi2_fork: \"整体预售订单金额\",\n  total_unfinished_estimate_order_gmv_for_roi2_fork: \"整体未完结预售订单预估金额\",\n  stat_cost_for_roi2_fork: \"整体消耗(元)\",\n  basic_stat_cost_for_roi2_v2_fork: \"基础消耗(元)\",\n  live_exclude_video_ecpm_for_roi2: \"整体千次展现费用(元)\",\n  live_exclude_video_cpc_for_roi2: \"整体点击单价(元)\",\n  total_cost_per_pay_order_for_roi2_fork: \"整体成交订单成本(元)\",\n  total_prepay_and_pay_order_roi2_fork: \"整体支付ROI\",\n  total_pay_order_coupon_amount_for_roi2_fork: \"整体成交智能优惠券金额\",\n  total_ecom_platform_subsidy_amount_for_roi2_fork: \"电商平台补贴金额\",\n  total_prepay_and_pay_settle_roi2_1h: \"1小时净成交ROI\",\n  total_cost_per_pay_order_settle_for_overall_roi2_1h: \"综合净成交订单成本(1小时)\",\n  total_prepay_and_pay_settle_overall_roi2_1h: \"综合净成交ROI(1小时)\",\n  total_order_settle_amount_for_roi2_1h: \"1小时净成交金额\",\n  total_order_settle_count_for_roi2_1h: \"1小时净成交订单数\",\n  total_cost_per_pay_order_settle_for_roi2_1h: \"1小时净成交订单成本(元)\",\n  total_order_real_settle_amount_for_roi2_1h: \"用户实际支付净成交金额(1小时)\",\n  no_refund_ecom_coupon_amount_for_roi2: \"智能优惠券未退款金额\",\n  no_refund_ecom_platform_subsidy_amount_for_roi2: \"电商平台补贴未退款金额\",\n  total_order_settle_amount_rate_for_roi2_1h: \"1小时净成交金额结算率(%)\",\n  total_order_settle_count_rate_for_roi2_1h: \"1小时净成交订单结算率(%)\",\n  total_refund_order_count_for_roi2_1h: \"1小时内退款订单数\",\n  total_refund_order_gmv_for_roi2_1h_all: \"1小时内退款金额\",\n  total_refund_order_gmv_for_roi2_1h_rate: \"1小时内退款率(%)\",\n  total_prepay_and_pay_settle_roi2_7d: \"7日结算ROI\",\n  total_order_settle_amount_for_roi2_7d: \"7日结算金额\",\n  total_order_settle_count_for_roi2_7d: \"7日结算订单数\",\n  total_cost_per_pay_order_settle_for_roi2_7d: \"7日结算订单成本(元)\",\n  total_order_settle_amount_rate_for_roi2_7d: \"7日GMV结算率(%)\",\n  total_order_settle_count_rate_for_roi2_7d: \"7日订单结算率(%)\",\n  total_prepay_and_pay_settle_roi2_14d: \"14日结算ROI\",\n  total_order_settle_amount_for_roi2_14d: \"14日结算金额\",\n  total_order_settle_count_for_roi2_14d: \"14日结算订单数\",\n  total_cost_per_pay_order_settle_for_roi2_14d: \"14日结算订单成本(元)\",\n  total_order_settle_amount_rate_for_roi2_14d: \"14日GMV结算率(%)\",\n  total_order_settle_count_rate_for_roi2_14d: \"14日订单结算率(%)\",\n  total_prepay_and_pay_settle_roi2_30d: \"30日结算ROI\",\n  total_order_settle_amount_for_roi2_30d: \"30日结算金额\",\n  total_order_settle_count_for_roi2_30d: \"30日结算订单数\",\n  total_cost_per_pay_order_settle_for_roi2_30d: \"30日结算订单成本(元)\",\n  total_order_settle_amount_rate_for_roi2_30d: \"30日GMV结算率(%)\",\n  total_order_settle_count_rate_for_roi2_30d: \"30日订单结算率(%)\",\n  total_prepay_and_pay_settle_roi2_90d: \"90日结算ROI\",\n  total_order_settle_amount_for_roi2_90d: \"90日结算金额\",\n  total_order_settle_count_for_roi2_90d: \"90日结算订单数\",\n  total_cost_per_pay_order_settle_for_roi2_90d: \"90日结算订单成本(元)\",\n  total_order_settle_amount_rate_for_roi2_90d: \"90日GMV结算率(%)\",\n  total_order_settle_count_rate_for_roi2_90d: \"90日订单结算率(%)\",\n  live_follow_count_for_roi2: \"新增粉丝数\",\n  live_comment_count_for_roi2: \"直播间评论次数\",\n  live_like_count_for_roi2: \"直播间点赞次数\",\n  additional_delivery_stat_cost_for_roi2_assist: \"追投调控消耗(元)\",\n  additional_delivery_total_pay_order_count_for_roi2_assist: \"追投调控成交订单数\",\n  additional_delivery_total_pay_order_gmv_include_coupon_for_roi2_assist: \"追投调控成交金额(含优惠券)\",\n  additional_delivery_total_prepay_and_pay_order_roi2_assist: \"追投调控支付ROI\",\n  additional_delivery_show_cnt_for_roi2_assist: \"追投调控展示次数\",\n  additional_delivery_ctr_for_roi2_assist: \"追投调控点击率(%)\",\n  additional_delivery_click_cnt_for_roi2_assist: \"追投调控点击次数\",\n  additional_delivery_convert_rate_for_roi2_assist: \"追投调控转化率(%)\",\n  additional_delivery_total_pay_order_gmv_for_roi2_assist: \"追投调控用户实际支付金额\",\n  additional_delivery_total_pay_order_coupon_amount_for_roi2_assist: \"追投调控成交智能优惠券金额\",\n  additional_delivery_total_ecom_platform_subsidy_amount_for_roi2_assist: \"追投调控电商平台补贴金额\",\n  additional_delivery_total_unfinished_estimate_order_gmv_for_roi2_assist: \"追投调控未完结预售订单预估金额\",\n  additional_delivery_pay_convert_cost_for_roi2_assist_v2: \"追投调控成交成本(元)\",\n  additional_delivery_pay_convert_cnt_for_roi2_assist_v2: \"追投调控成交人数\",\n  stat_cost_for_overall_roi2: \"综合成本(元)\"\n};\n\nconst DIM_ORDER = Object.values(LIVE_DIM_MAPPING);\nconst IND_ORDER = Object.values(LIVE_IND_MAPPING);\nconst TIME_COLS = [\"千川UID\", \"时间\"];\n\nfunction parseRow(row, advertiserId, startTime) {\n  const out = {};\n  const dims = row.dimensions || {};\n  for (const [en, cn] of Object.entries(LIVE_DIM_MAPPING)) {\n    out[cn] = (dims[en] && dims[en].ValueStr) ? dims[en].ValueStr : \"\";\n  }\n  out[\"千川UID\"] = advertiserId;\n  out[\"时间\"] = startTime;\n  const metrics = row.metrics || {};\n  for (const [en, cn] of Object.entries(LIVE_IND_MAPPING)) {\n    out[cn] = (metrics[en] && metrics[en].ValueStr) ? metrics[en].ValueStr : \"\";\n  }\n  return out;\n}\n\nfunction orderColumns(obj) {\n  const ordered = {};\n  for (const col of [...DIM_ORDER, ...TIME_COLS, ...IND_ORDER]) {\n    if (Object.prototype.hasOwnProperty.call(obj, col)) ordered[col] = obj[col];\n  }\n  for (const k of Object.keys(obj)) {\n    if (!ordered[k]) ordered[k] = obj[k];\n  }\n  return ordered;\n}\n\n// ---------- n8n 入口 ----------\nconst items = $input.all();\nconst results = [];\n\n// 🔥 核心修正：把变量提取和时间初始化移到【所有循环的最外层】🔥\nconst advertiserId = $('是否直播画面接口').first().json.advertiser_id;\nconst startTime = $('是否直播画面接口').first().json.start_time;\n\nconst safeStartTime = startTime.replace(' ', 'T'); \nlet currentTimestamp = new Date(safeStartTime).getTime();\n\n// 遍历 n8n 的每一个数据批次 (Item)\nfor (const item of items) {\n  const json = item.json;\n  const data = json.data || json;\n  const rows = data.rows || data.data?.rows || [];\n\n  // 开始遍历批次里的每一行具体数据\n  for (const row of rows) {\n    \n    // 1. 将当前的时间戳转化为 Date 对象\n    const d = new Date(currentTimestamp);\n    \n    // 2. 拼装格式化字符串 \"YYYY-MM-DD HH:mm:ss\"\n    const pad = (n) => n.toString().padStart(2, '0');\n    const timeString = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;\n\n    // 3. 解析当前行并存入结果\n    const parsed = parseRow(row, advertiserId, timeString);\n    results.push({ json: orderColumns(parsed) });\n\n    // 4. 当前行处理完毕，时间戳累加 1 分钟，继续走下一个循环\n    currentTimestamp += 60000;\n  }\n}\n\nreturn results.length ? results : [{ json: { _empty: true } }];\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '提取直播数据' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        768
+      ],
+      "id": "f07fb878-02c8-44b2-8d57-eff081ee2d7a",
+      "name": "提取直播数据",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - 视频 解析并清洗 ==========\n// 上游：数据请求 HTTP 节点。建议 HTTP 将响应放到字段 \"data\"，以保留 advertiser_id、aweme_id、start_time\n// 输出：多条 item，列顺序 维度 + 千川UID + 抖音UID + 时间 + 指标；维度值按 DIM_VALUE_MAPPING 转中文\n\nconst VIDEO_DIM_MAPPING = {\n  stat_time_day: \"日期\",\n  // roi2_material_name_or_id: \"全域素材搜索输入\",\n  roi2_material_video_name: \"全域素材视频名称\",\n  roi2_material_video_type: \"全域素材视频类型\",\n  // roi2_material_status: \"全域视频素材状态\",\n  material_id: \"素材ID\",\n  // roi2_material_advice: \"素材建议\",\n  // anchor_id: \"抖音号ID\",\n  // aggregate_smart_bid_type: \"roi2投放类型\",\n  // ecp_app_id: \"下单平台\",\n  material_create_time_v2: \"创建时间\",\n  roi2_material_upload_time: \"投放时间\",\n};\n\nconst DIM_VALUE_MAPPING = {\n  roi2_material_video_type: { \"3\": \"智能优选视频\", \"1\": \"全部\", \"2\": \"自选投放视频\" },\n  roi2_material_status: { \"2\": \"已删除\", \"1\": \"投放中\" },\n  roi2_material_advice: { \"8\": \"优质素材\", \"10\": \"低质素材\", \"4\": \"搬运素材\", \"5\": \"低效素材\", \"6\": \"首发素材\" },\n  aggregate_smart_bid_type: { \"7\": \"放量投放\", \"0\": \"控成本投放\" },\n  ecp_app_id: { \"1\": \"千川pc\", \"2\": \"小店随心推\" }\n};\n\nconst VIDEO_IND_MAPPING = {\n  live_show_count_for_roi2_v2: \"整体展现次数\",\n  live_watch_count_for_roi2_v2: \"整体点击次数\",\n  live_cvr_rate_for_roi2_v2: \"整体点击率\",\n  live_convert_rate_for_roi2_v2: \"整体转化率\",\n  total_pay_order_count_for_roi2: \"整体成交订单数\",\n  total_pay_order_gmv_include_coupon_for_roi2: \"整体成交金额\",\n  total_pay_order_gmv_rate_for_roi2: \"整体成交金额占比\",\n  stat_cost_for_roi2: \"整体消耗\",\n  cost_rate_for_roi2: \"整体消耗占比\",\n  basic_stat_cost_for_roi2_v2: \"基础消耗\",\n  total_prepay_and_pay_order_roi2: \"整体支付ROI\",\n  total_cost_per_pay_order_for_roi2: \"整体成交订单成本\",\n  total_pay_order_gmv_for_roi2: \"用户实际支付金额\",\n  total_ecpm_for_roi2: \"整体千次展现费用\",\n  total_cpc_for_roi2: \"整体点击单价\",\n  total_pay_order_coupon_amount_for_roi2: \"整体成交智能优惠券金额\",\n  total_ecom_platform_subsidy_amount_for_roi2: \"电商平台补贴金额\",\n  total_prepay_order_count_for_roi2: \"整体预售订单数\",\n  total_prepay_order_gmv_for_roi2: \"整体预售订单金额\",\n  total_unfinished_estimate_order_gmv_for_roi2: \"整体未完结预售订单预估金额\",\n  stat_cost_for_overall_roi2: \"综合成本\",\n  total_prepay_and_pay_settle_overall_roi2_1h: \"综合净成交ROI\",\n  total_cost_per_pay_order_settle_for_overall_roi2_1h: \"综合净成交订单成本\",\n  total_prepay_and_pay_settle_roi2_1h: \"净成交ROI\",\n  total_order_settle_amount_for_roi2_1h: \"净成交金额\",\n  total_order_settle_count_for_roi2_1h: \"净成交订单数\",\n  total_cost_per_pay_order_settle_for_roi2_1h: \"净成交订单成本\",\n  total_order_real_settle_amount_for_roi2_1h: \"用户实际支付净成交金额\",\n  no_refund_ecom_coupon_amount_for_roi2: \"智能优惠券未退款金额\",\n  no_refund_ecom_platform_subsidy_amount_for_roi2: \"电商平台补贴未退款金额\",\n  total_order_settle_amount_rate_for_roi2_1h: \"净成交金额结算率\",\n  total_order_settle_count_rate_for_roi2_1h: \"净成交订单结算率\",\n  total_refund_order_count_for_roi2_1h: \"1小时内退款订单数\",\n  total_refund_order_gmv_for_roi2_1h_all: \"1小时内退款金额\",\n  total_refund_order_gmv_for_roi2_1h_rate: \"1小时内退款率\",\n  total_prepay_and_pay_settle_roi2_7d: \"7日结算ROI\",\n  total_order_settle_amount_for_roi2_7d: \"7日结算金额\",\n  total_order_settle_count_for_roi2_7d: \"7日结算订单数\",\n  total_cost_per_pay_order_settle_for_roi2_7d: \"7日结算订单成本\",\n  total_order_settle_amount_rate_for_roi2_7d: \"7日GMV结算率\",\n  total_order_settle_count_rate_for_roi2_7d: \"7日订单结算率\",\n  total_prepay_and_pay_settle_roi2_14d: \"14日结算ROI\",\n  total_order_settle_amount_for_roi2_14d: \"14日结算金额\",\n  total_order_settle_count_for_roi2_14d: \"14日结算订单数\",\n  total_cost_per_pay_order_settle_for_roi2_14d: \"14日结算订单成本\",\n  total_order_settle_amount_rate_for_roi2_14d: \"14日GMV结算率\",\n  total_order_settle_count_rate_for_roi2_14d: \"14日订单结算率\",\n  total_prepay_and_pay_settle_roi2_30d: \"30日结算ROI\",\n  total_order_settle_amount_for_roi2_30d: \"30日结算金额\",\n  total_order_settle_count_for_roi2_30d: \"30日结算订单数\",\n  total_cost_per_pay_order_settle_for_roi2_30d: \"30日结算订单成本\",\n  total_order_settle_amount_rate_for_roi2_30d: \"30日GMV结算率\",\n  total_order_settle_count_rate_for_roi2_30d: \"30日订单结算率\",\n  total_prepay_and_pay_settle_roi2_90d: \"90日结算ROI\",\n  total_order_settle_amount_for_roi2_90d: \"90日结算金额\",\n  total_order_settle_count_for_roi2_90d: \"90日结算订单数\",\n  total_cost_per_pay_order_settle_for_roi2_90d: \"90日结算订单成本\",\n  total_order_settle_amount_rate_for_roi2_90d: \"90日GMV结算率\",\n  total_order_settle_count_rate_for_roi2_90d: \"90日订单结算率\",\n  video_like_count_for_roi2: \"视频点赞数\",\n  video_follow_count_for_roi2: \"新增粉丝数\",\n  video_avg_watch_duration_for_roi2: \"平均观看时长\",\n  video_play_count_for_roi2_v2: \"视频播放数\",\n  video_play_finish_count_for_roi2_v2: \"视频完播数\",\n  video_play_finish_rate_for_roi2_v2: \"视频完播率\",\n  video_comment_count_for_roi2_v2: \"视频评论数\",\n  video_play_duration_2s_rate_for_roi2: \"2秒播放率\",\n  video_play_duration_3s_rate_for_roi2: \"3秒播放率\",\n  video_play_duration_5s_rate_for_roi2: \"5秒播放率\",\n  video_play_duration_10s_rate_for_roi2: \"10秒播放率\",\n  heat_stat_cost_for_roi2: \"追投消耗\",\n  heat_total_pay_order_count_for_roi2: \"追投成交订单数\",\n  heat_total_pay_order_gmv_for_roi2: \"追投成交金额\",\n  heat_total_prepay_and_pay_order_roi2: \"追投ROI\",\n  additional_delivery_stat_cost_for_roi2_assist: \"追投调控消耗\",\n  additional_delivery_total_pay_order_count_for_roi2_assist: \"追投调控成交订单数\",\n  additional_delivery_total_pay_order_gmv_include_coupon_for_roi2_assist: \"追投调控成交金额\",\n  additional_delivery_total_prepay_and_pay_order_roi2_assist: \"追投调控支付ROI\",\n  additional_delivery_show_cnt_for_roi2_assist: \"追投调控展示次数\",\n  additional_delivery_ctr_for_roi2_assist: \"追投调控点击率\",\n  additional_delivery_click_cnt_for_roi2_assist: \"追投调控点击次数\",\n  additional_delivery_convert_rate_for_roi2_assist: \"追投调控转化率\",\n  additional_delivery_total_pay_order_gmv_for_roi2_assist: \"追投调控用户实际支付金额\",\n  additional_delivery_total_pay_order_coupon_amount_for_roi2_assist: \"追投调控成交智能优惠券金额\",\n  additional_delivery_total_ecom_platform_subsidy_amount_for_roi2_assist: \"追投调控电商平台补贴金额\",\n  additional_delivery_total_unfinished_estimate_order_gmv_for_roi2_assist: \"追投调控未完结预售订单预估金额\",\n  additional_delivery_pay_convert_cost_for_roi2_assist_v2: \"追投调控成交成本\",\n  additional_delivery_pay_convert_cnt_for_roi2_assist_v2: \"追投调控成交人数\"\n};\n\nconst DIM_ORDER = Object.values(VIDEO_DIM_MAPPING);\nconst IND_ORDER = Object.values(VIDEO_IND_MAPPING);\nconst TIME_COLS = [\"千川UID\", \"抖音UID\", \"时间\"];\n\nfunction dimValueMap(enField, value) {\n  const map = DIM_VALUE_MAPPING[enField];\n  if (!map || value === undefined || value === null) return value === undefined || value === null ? \"\" : String(value);\n  return map[String(value)] !== undefined ? map[String(value)] : String(value);\n}\n\nfunction parseRow(row, advertiserId, awemeId, startTime) {\n  const out = {};\n  const dims = row.dimensions || {};\n  for (const [en, cn] of Object.entries(VIDEO_DIM_MAPPING)) {\n    let v = (dims[en] && dims[en].ValueStr) ? dims[en].ValueStr : \"\";\n    out[cn] = dimValueMap(en, v);\n  }\n  out[\"千川UID\"] = advertiserId;\n  out[\"抖音UID\"] = awemeId;\n  out[\"时间\"] = startTime;\n  const metrics = row.metrics || {};\n  for (const [en, cn] of Object.entries(VIDEO_IND_MAPPING)) {\n    out[cn] = (metrics[en] && metrics[en].ValueStr) ? metrics[en].ValueStr : \"\";\n  }\n  return out;\n}\n\nfunction orderColumns(obj) {\n  const ordered = {};\n  for (const col of [...DIM_ORDER, ...TIME_COLS, ...IND_ORDER]) {\n    if (Object.prototype.hasOwnProperty.call(obj, col)) ordered[col] = obj[col];\n  }\n  for (const k of Object.keys(obj)) {\n    if (!ordered[k]) ordered[k] = obj[k];\n  }\n  return ordered;\n}\n\n// ---------- n8n 入口 ----------\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const json = item.json;\n  const data = json.data || json;\n  const rows = data.rows || data.data?.rows || [];\n  const advertiserId = json.advertiser_id || \"\";\n  const awemeId = json.aweme_id || \"\";\n  const startTime = json.start_time || \"\";\n\n  \n  for (const row of rows) {\n    const parsed = parseRow(row, advertiserId, awemeId, startTime);\n    results.push({ json: orderColumns(parsed) });\n  }\n}\n\nreturn results.length ? results : [{ json: { _empty: true } }];\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '提取视频数据' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        1024
+      ],
+      "id": "cc0a1c0f-b83c-4562-8f7c-6fcc3c4e7cf8",
+      "name": "提取视频数据",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - 其他创意 解析并清洗 ==========\n// 上游：数据请求 HTTP 节点。建议 HTTP 将响应放到字段 \"data\"，以保留 advertiser_id、aweme_id、start_time\n// 输出：多条 item，列顺序 千川UID + 抖音UID + 时间 + 指标（OTHER 无维度中文映射，仅指标）\n\nconst OTHER_MAPPING = {\n  total_pay_order_count_for_roi2: \"整体成交订单数\",\n  total_pay_order_gmv_include_coupon_for_roi2: \"整体成交金额\",\n  total_pay_order_gmv_rate_for_roi2: \"整体成交金额占比\",\n  total_pay_order_gmv_for_roi2: \"用户实际支付金额\",\n  total_pay_order_coupon_amount_for_roi2: \"整体成交智能优惠券金额\",\n  total_ecom_platform_subsidy_amount_for_roi2: \"电商平台补贴金额\",\n  total_prepay_order_count_for_roi2: \"整体预售订单数\",\n  total_prepay_order_gmv_for_roi2: \"整体预售订单金额\",\n  total_unfinished_estimate_order_gmv_for_roi2: \"整体未完结预售订单预估金额\"\n};\n\nconst IND_ORDER = Object.values(OTHER_MAPPING);\nconst FIXED_COLS = [\"千川UID\", \"抖音UID\", \"时间\"];\n\nfunction parseRow(row, advertiserId, awemeId, startTime) {\n  const out = {\n    \"千川UID\": advertiserId,\n    \"抖音UID\": awemeId,\n    \"时间\": startTime\n  };\n  const metrics = row.metrics || {};\n  for (const [en, cn] of Object.entries(OTHER_MAPPING)) {\n    out[cn] = (metrics[en] && metrics[en].ValueStr) ? metrics[en].ValueStr : \"\";\n  }\n  return out;\n}\n\nfunction orderColumns(obj) {\n  const ordered = {};\n  for (const col of [...FIXED_COLS, ...IND_ORDER]) {\n    if (Object.prototype.hasOwnProperty.call(obj, col)) ordered[col] = obj[col];\n  }\n  for (const k of Object.keys(obj)) {\n    if (!ordered[k]) ordered[k] = obj[k];\n  }\n  return ordered;\n}\n\n// ---------- n8n 入口 ----------\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const json = item.json;\n  const data = json.data || json;\n  const rows = data.rows || data.data?.rows || [];\n  // const advertiserId = json.advertiser_id || \"\";\n  // const awemeId = json.aweme_id || \"\";\n  // const startTime = json.start_time || \"\";\n  const advertiserId = $('是否视频接口').first().json.advertiser_id\n  const awemeId = $('是否视频接口').first().json.aweme_id\n  const startTime = $('是否视频接口').first().json.start_time\n\n  for (const row of rows) {\n    const parsed = parseRow(row, advertiserId, awemeId, startTime);\n    results.push({ json: orderColumns(parsed) });\n  }\n}\n\nreturn results.length ? results : [{ json: { _empty: true } }];\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '提取其它数据' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        1280
+      ],
+      "id": "a727799c-2130-4127-a936-0978e6081f6e",
+      "name": "提取其它数据",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "ods_千川素材_直播画面_m",
+          "mode": "list",
+          "cachedResultName": "ods_千川素材_直播画面_m"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3136,
+        768
+      ],
+      "id": "7f695a98-e287-4ed3-a7d2-13127995eaee",
+      "name": "ods_千川素材_直播画面_增量更新",
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "ods_千川素材_视频_m",
+          "mode": "list",
+          "cachedResultName": "ods_千川素材_视频_m"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3136,
+        1024
+      ],
+      "id": "f93a7de7-bad4-4226-8c2b-cc5059c33224",
+      "name": "ods_千川素材_视频投放_增量更新",
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "ods_千川素材_其他",
+          "mode": "list",
+          "cachedResultName": "ods_千川素材_其他"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3136,
+        1280
+      ],
+      "id": "d028941f-62ec-4067-884e-2b781ba10f50",
+      "name": "ods_千川素材_其他创意_增量更新",
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - 时间拆分 ==========\n// 输入：Run Once for All Items，取 items[0].json 的 start_time、end_time（格式 \"YYYY-MM-DD HH:mm:ss\"）\n// 或由上游传入单条：{ start_time, end_time }；可选 mode: \"minute\" | \"hour\" | \"day\"\n// 输出：多条 item，每条 { start_time, end_time }，供下游「按时间段 + 账户」请求 API\n\nfunction parseDt(str) {\n  const d = new Date(str.replace(\" \", \"T\"));\n  if (isNaN(d.getTime())) throw new Error(\"时间格式错误，需 YYYY-MM-DD HH:mm:ss\");\n  return d;\n}\n\nfunction formatDt(d) {\n  const y = d.getFullYear();\n  const m = String(d.getMonth() + 1).padStart(2, \"0\");\n  const day = String(d.getDate()).padStart(2, \"0\");\n  const h = String(d.getHours()).padStart(2, \"0\");\n  const min = String(d.getMinutes()).padStart(2, \"0\");\n  const s = String(d.getSeconds()).padStart(2, \"0\");\n  return `${y}-${m}-${day} ${h}:${min}:${s}`;\n}\n\n/** 按天再按分钟拆分：每段为 [整分:00, 整分:59] */\nfunction splitTimeByDayThenMinute(totalStart, totalEnd) {\n  const list = [];\n  let currentDay = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (currentDay >= endDt) return list;\n\n  while (currentDay < endDt) {\n    const dayStart = new Date(currentDay.getFullYear(), currentDay.getMonth(), currentDay.getDate(), 0, 0, 0);\n    let dayEnd = new Date(dayStart);\n    dayEnd.setDate(dayEnd.getDate() + 1);\n    dayEnd.setSeconds(dayEnd.getSeconds() - 1);\n    if (dayEnd > endDt) dayEnd = endDt;\n\n    let currentMinute = dayStart;\n    while (currentMinute <= dayEnd) {\n      const minuteStart = new Date(currentMinute);\n      minuteStart.setSeconds(0);\n      let minuteEnd = new Date(minuteStart);\n      minuteEnd.setMinutes(minuteEnd.getMinutes() + 1);\n      minuteEnd.setSeconds(minuteEnd.getSeconds() - 1);\n      if (minuteEnd > endDt) minuteEnd = endDt;\n      list.push({ start_time: formatDt(minuteStart), end_time: formatDt(minuteEnd) });\n      currentMinute = new Date(minuteStart);\n      currentMinute.setMinutes(currentMinute.getMinutes() + 1);\n    }\n    currentDay = new Date(dayStart);\n    currentDay.setDate(currentDay.getDate() + 1);\n  }\n  return list;\n}\n\n/** 按小时拆分：每段 整点:00:00 ~ 整点:59:59 */\nfunction splitTimeByHour(totalStart, totalEnd) {\n  const list = [];\n  const startDt = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (startDt >= endDt) return list;\n\n  let current = new Date(startDt);\n  current.setMinutes(0, 0, 0);\n  while (current < endDt) {\n    let hourEnd = new Date(current);\n    hourEnd.setHours(hourEnd.getHours() + 1);\n    hourEnd.setSeconds(hourEnd.getSeconds() - 1);\n    if (hourEnd > endDt) hourEnd = endDt;\n    if (current < hourEnd) {\n      list.push({ start_time: formatDt(current), end_time: formatDt(hourEnd) });\n    }\n    current.setHours(current.getHours() + 1);\n  }\n  return list;\n}\n\n/** 按自然日拆分：当天 00:00:00 ~ 23:59:59 */\nfunction splitTimeByDay(totalStart, totalEnd) {\n  const list = [];\n  const startDt = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (startDt >= endDt) return list;\n\n  let current = new Date(startDt);\n  current.setHours(0, 0, 0, 0);\n  while (current < endDt) {\n    let dayEnd = new Date(current);\n    dayEnd.setDate(dayEnd.getDate() + 1);\n    dayEnd.setSeconds(dayEnd.getSeconds() - 1);\n    if (dayEnd > endDt) dayEnd = endDt;\n    if (current < dayEnd) {\n      list.push({ start_time: formatDt(current), end_time: formatDt(dayEnd) });\n    }\n    current.setDate(current.getDate() + 1);\n  }\n  return list;\n}\n\n// ---------- n8n 入口 ----------\nconst input = $input.first();\nconst json = input?.json || {};\nconst startTime = json.start_time || json.startTime;\nconst endTime = json.end_time || json.endTime;\nconst mode = (json.mode || \"day\").toLowerCase();\n\nif (!startTime || !endTime) {\n  throw new Error(\"缺少 start_time 或 end_time\");\n}\n\nlet ranges;\nif (mode === \"hour\") {\n  ranges = splitTimeByHour(startTime, endTime);\n} else if (mode === \"day\") {\n  ranges = splitTimeByDay(startTime, endTime);\n} else {\n  ranges = splitTimeByDayThenMinute(startTime, endTime);\n}\n\n// 若上游还传了 advertiser_id、aweme_id、account_name、data_topic 等，一并带到每条\nconst extra = {};\n[\"access_token\" ,\"advertiser_id\", \"aweme_id\", \"account_name\", \"data_topic\"].forEach((k) => {\n  if (json[k] !== undefined) extra[k] = json[k];\n});\n\nreturn ranges.map((r) => ({ json: { ...r, ...extra } }));\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '时间拆分-天' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        1536
+      ],
+      "id": "8e474365-1482-490b-8f1d-5a4df5917381",
+      "name": "时间拆分-天"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - 时间拆分 ==========\n// 输入：Run Once for All Items，取 items[0].json 的 start_time、end_time（格式 \"YYYY-MM-DD HH:mm:ss\"）\n// 或由上游传入单条：{ start_time, end_time }；可选 mode: \"minute\" | \"hour\" | \"day\"\n// 输出：多条 item，每条 { start_time, end_time }，供下游「按时间段 + 账户」请求 API\n\nfunction parseDt(str) {\n  const d = new Date(str.replace(\" \", \"T\"));\n  if (isNaN(d.getTime())) throw new Error(\"时间格式错误，需 YYYY-MM-DD HH:mm:ss\");\n  return d;\n}\n\nfunction formatDt(d) {\n  const y = d.getFullYear();\n  const m = String(d.getMonth() + 1).padStart(2, \"0\");\n  const day = String(d.getDate()).padStart(2, \"0\");\n  const h = String(d.getHours()).padStart(2, \"0\");\n  const min = String(d.getMinutes()).padStart(2, \"0\");\n  const s = String(d.getSeconds()).padStart(2, \"0\");\n  return `${y}-${m}-${day} ${h}:${min}:${s}`;\n}\n\n/** 按天再按分钟拆分：每段为 [整分:00, 整分:59] */\nfunction splitTimeByDayThenMinute(totalStart, totalEnd) {\n  const list = [];\n  let currentDay = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (currentDay >= endDt) return list;\n\n  while (currentDay < endDt) {\n    const dayStart = new Date(currentDay.getFullYear(), currentDay.getMonth(), currentDay.getDate(), 0, 0, 0);\n    let dayEnd = new Date(dayStart);\n    dayEnd.setDate(dayEnd.getDate() + 1);\n    dayEnd.setSeconds(dayEnd.getSeconds() - 1);\n    if (dayEnd > endDt) dayEnd = endDt;\n\n    let currentMinute = dayStart;\n    while (currentMinute <= dayEnd) {\n      const minuteStart = new Date(currentMinute);\n      minuteStart.setSeconds(0);\n      let minuteEnd = new Date(minuteStart);\n      minuteEnd.setMinutes(minuteEnd.getMinutes() + 1);\n      minuteEnd.setSeconds(minuteEnd.getSeconds() - 1);\n      if (minuteEnd > endDt) minuteEnd = endDt;\n      list.push({ start_time: formatDt(minuteStart), end_time: formatDt(minuteEnd) });\n      currentMinute = new Date(minuteStart);\n      currentMinute.setMinutes(currentMinute.getMinutes() + 1);\n    }\n    currentDay = new Date(dayStart);\n    currentDay.setDate(currentDay.getDate() + 1);\n  }\n  return list;\n}\n\n/** 按小时拆分：每段 整点:00:00 ~ 整点:59:59 */\nfunction splitTimeByHour(totalStart, totalEnd) {\n  const list = [];\n  const startDt = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (startDt >= endDt) return list;\n\n  let current = new Date(startDt);\n  current.setMinutes(0, 0, 0);\n  while (current < endDt) {\n    let hourEnd = new Date(current);\n    hourEnd.setHours(hourEnd.getHours() + 1);\n    hourEnd.setSeconds(hourEnd.getSeconds() - 1);\n    if (hourEnd > endDt) hourEnd = endDt;\n    if (current < hourEnd) {\n      list.push({ start_time: formatDt(current), end_time: formatDt(hourEnd) ,accesstoken});\n    }\n    current.setHours(current.getHours() + 1);\n  }\n  return list;\n}\n\n/** 按自然日拆分：当天 00:00:00 ~ 23:59:59 */\nfunction splitTimeByDay(totalStart, totalEnd) {\n  const list = [];\n  const startDt = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (startDt >= endDt) return list;\n\n  let current = new Date(startDt);\n  current.setHours(0, 0, 0, 0);\n  while (current < endDt) {\n    let dayEnd = new Date(current);\n    dayEnd.setDate(dayEnd.getDate() + 1);\n    dayEnd.setSeconds(dayEnd.getSeconds() - 1);\n    if (dayEnd > endDt) dayEnd = endDt;\n    if (current < dayEnd) {\n      list.push({ start_time: formatDt(current), end_time: formatDt(dayEnd) });\n    }\n    current.setDate(current.getDate() + 1);\n  }\n  return list;\n}\n\n// ---------- n8n 入口 ----------\nconst input = $input.first();\nconst json = input?.json || {};\nconst startTime = json.start_time || json.startTime;\nconst endTime = json.end_time || json.endTime;\nconst mode = (json.mode || \"minute\").toLowerCase();\nconst accesstoken = $input.first().json.access_token\n  \nif (!startTime || !endTime) {\n  throw new Error(\"缺少 start_time 或 end_time\");\n}\n\nlet ranges;\nif (mode === \"hour\") {\n  ranges = splitTimeByHour(startTime, endTime);\n} else if (mode === \"day\") {\n  ranges = splitTimeByDay(startTime, endTime);\n} else {\n  ranges = splitTimeByDayThenMinute(startTime, endTime);\n}\n\n// 若上游还传了 advertiser_id、aweme_id、account_name、data_topic 等，一并带到每条\nconst extra = {};\n[\"access_token\" ,\"advertiser_id\", \"aweme_id\", \"account_name\", \"data_topic\"].forEach((k) => {\n  if (json[k] !== undefined) extra[k] = json[k];\n});\n\nreturn ranges.map((r) => ({ json: { ...r, ...extra } }));\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '时间拆分-分钟' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        1008
+      ],
+      "id": "a310f642-597f-4525-94c5-38b29d8d307e",
+      "name": "时间拆分-分钟"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - Edit 组合并划分每次请求参数 ==========\n// 输入：时间拆分节点输出的多条 item，每条仅 { start_time, end_time }\n//       token 从「查库取Token」或刷新分支的节点取（见下方 tokenSource 配置）\n// 输出：多条 item，每条 = 一次 API 请求的完整参数（时间段 × 账户 × data_topic）\n//       下游按 data_topic 分三路（LIVE/VIDEO/OTHER）接三个 HTTP 请求节点\n\nconst DATA_TOPIC = {\n  LIVE: \"SITE_PROMOTION_POST_DATA_LIVE\",\n  VIDEO: \"SITE_PROMOTION_POST_DATA_VIDEO\",\n  OTHER: \"SITE_PROMOTION_POST_DATA_OTHER\"\n};\n\n// 账户列表：与 Python accounts_to_fetch 一致，按需修改\nconst ACCOUNTS = [\n  { advertiser_id: \"1810151981662283\", aweme_id: \"95882467048\", account_name: \"地理八分钟\" },\n  { advertiser_id: \"1841239871244042\", aweme_id: \"1748646316999804\", account_name: \"历史八分钟\" },\n  { advertiser_id: \"1841239871244042\", aweme_id: \"2817420429893860\", account_name: \"会员直播间\" },\n  { advertiser_id: \"1854815081234699\", aweme_id: \"96940362400\", account_name: \"乐乐伴学\" },\n  { advertiser_id: \"1854731147621504\", aweme_id: \"2817420429893860\", account_name: \"会员直播间\" },\n  { advertiser_id: \"1854730832145883\", aweme_id: \"7467699792727917625\", account_name: \"三五小星世界历史\" }\n];\n\nconst LIVE_DIMS = [\"anchor_id\", \"stat_time_day\", \"roi2_material_anchor_name\"];\nconst LIVE_IND_KEYS = [\n  \"live_show_count_exclude_video_for_roi2\", \"live_watch_count_exclude_video_for_roi2\",\n  \"live_cvr_rate_exclude_video_for_roi2\", \"live_convert_rate_exclude_video_for_roi2\",\n  \"total_pay_order_count_for_roi2_fork\", \"total_prepay_order_count_for_roi2_fork\",\n  \"total_pay_order_gmv_include_coupon_for_roi2_fork\", \"total_pay_order_gmv_for_roi2_fork\",\n  \"total_prepay_order_gmv_for_roi2_fork\", \"total_unfinished_estimate_order_gmv_for_roi2_fork\",\n  \"stat_cost_for_roi2_fork\", \"basic_stat_cost_for_roi2_v2_fork\", \"live_exclude_video_ecpm_for_roi2\",\n  \"live_exclude_video_cpc_for_roi2\", \"total_cost_per_pay_order_for_roi2_fork\",\n  \"total_prepay_and_pay_order_roi2_fork\", \"total_pay_order_coupon_amount_for_roi2_fork\",\n  \"total_ecom_platform_subsidy_amount_for_roi2_fork\", \"total_prepay_and_pay_settle_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_overall_roi2_1h\", \"total_prepay_and_pay_settle_overall_roi2_1h\",\n  \"total_order_settle_amount_for_roi2_1h\", \"total_order_settle_count_for_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_roi2_1h\", \"total_order_real_settle_amount_for_roi2_1h\",\n  \"no_refund_ecom_coupon_amount_for_roi2\", \"no_refund_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_order_settle_amount_rate_for_roi2_1h\", \"total_order_settle_count_rate_for_roi2_1h\",\n  \"total_refund_order_count_for_roi2_1h\", \"total_refund_order_gmv_for_roi2_1h_all\",\n  \"total_refund_order_gmv_for_roi2_1h_rate\", \"total_prepay_and_pay_settle_roi2_7d\",\n  \"total_order_settle_amount_for_roi2_7d\", \"total_order_settle_count_for_roi2_7d\",\n  \"total_cost_per_pay_order_settle_for_roi2_7d\", \"total_order_settle_amount_rate_for_roi2_7d\",\n  \"total_order_settle_count_rate_for_roi2_7d\", \"total_prepay_and_pay_settle_roi2_14d\",\n  \"total_order_settle_amount_for_roi2_14d\", \"total_order_settle_count_for_roi2_14d\",\n  \"total_cost_per_pay_order_settle_for_roi2_14d\", \"total_order_settle_amount_rate_for_roi2_14d\",\n  \"total_order_settle_count_rate_for_roi2_14d\", \"total_prepay_and_pay_settle_roi2_30d\",\n  \"total_order_settle_amount_for_roi2_30d\", \"total_order_settle_count_for_roi2_30d\",\n  \"total_cost_per_pay_order_settle_for_roi2_30d\", \"total_order_settle_amount_rate_for_roi2_30d\",\n  \"total_order_settle_count_rate_for_roi2_30d\", \"total_prepay_and_pay_settle_roi2_90d\",\n  \"total_order_settle_amount_for_roi2_90d\", \"total_order_settle_count_for_roi2_90d\",\n  \"total_cost_per_pay_order_settle_for_roi2_90d\", \"total_order_settle_amount_rate_for_roi2_90d\",\n  \"total_order_settle_count_rate_for_roi2_90d\", \"live_follow_count_for_roi2\",\n  \"live_comment_count_for_roi2\", \"live_like_count_for_roi2\",\n  \"additional_delivery_stat_cost_for_roi2_assist\", \"additional_delivery_total_pay_order_count_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_include_coupon_for_roi2_assist\", \"additional_delivery_total_prepay_and_pay_order_roi2_assist\",\n  \"additional_delivery_show_cnt_for_roi2_assist\", \"additional_delivery_ctr_for_roi2_assist\",\n  \"additional_delivery_click_cnt_for_roi2_assist\", \"additional_delivery_convert_rate_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_for_roi2_assist\", \"additional_delivery_total_pay_order_coupon_amount_for_roi2_assist\",\n  \"additional_delivery_total_ecom_platform_subsidy_amount_for_roi2_assist\", \"additional_delivery_total_unfinished_estimate_order_gmv_for_roi2_assist\",\n  \"additional_delivery_pay_convert_cost_for_roi2_assist_v2\", \"additional_delivery_pay_convert_cnt_for_roi2_assist_v2\",\n  \"stat_cost_for_overall_roi2\"\n];\n\nconst VIDEO_DIMS = [\"stat_time_day\", \"roi2_material_video_name\", \"roi2_material_video_type\", \"material_id\", \"material_create_time_v2\", \"roi2_material_upload_time\"];\nconst VIDEO_IND_KEYS = [\n  \"live_show_count_for_roi2_v2\", \"live_watch_count_for_roi2_v2\", \"live_cvr_rate_for_roi2_v2\", \"live_convert_rate_for_roi2_v2\",\n  \"total_pay_order_count_for_roi2\", \"total_pay_order_gmv_include_coupon_for_roi2\", \"total_pay_order_gmv_rate_for_roi2\",\n  \"stat_cost_for_roi2\", \"cost_rate_for_roi2\", \"basic_stat_cost_for_roi2_v2\", \"total_prepay_and_pay_order_roi2\",\n  \"total_cost_per_pay_order_for_roi2\", \"total_pay_order_gmv_for_roi2\", \"total_ecpm_for_roi2\", \"total_cpc_for_roi2\",\n  \"total_pay_order_coupon_amount_for_roi2\", \"total_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_prepay_order_count_for_roi2\", \"total_prepay_order_gmv_for_roi2\", \"total_unfinished_estimate_order_gmv_for_roi2\",\n  \"stat_cost_for_overall_roi2\", \"total_prepay_and_pay_settle_overall_roi2_1h\", \"total_cost_per_pay_order_settle_for_overall_roi2_1h\",\n  \"total_prepay_and_pay_settle_roi2_1h\", \"total_order_settle_amount_for_roi2_1h\", \"total_order_settle_count_for_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_roi2_1h\", \"total_order_real_settle_amount_for_roi2_1h\",\n  \"no_refund_ecom_coupon_amount_for_roi2\", \"no_refund_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_order_settle_amount_rate_for_roi2_1h\", \"total_order_settle_count_rate_for_roi2_1h\",\n  \"total_refund_order_count_for_roi2_1h\", \"total_refund_order_gmv_for_roi2_1h_all\", \"total_refund_order_gmv_for_roi2_1h_rate\",\n  \"total_prepay_and_pay_settle_roi2_7d\", \"total_order_settle_amount_for_roi2_7d\", \"total_order_settle_count_for_roi2_7d\",\n  \"total_cost_per_pay_order_settle_for_roi2_7d\", \"total_order_settle_amount_rate_for_roi2_7d\", \"total_order_settle_count_rate_for_roi2_7d\",\n  \"total_prepay_and_pay_settle_roi2_14d\", \"total_order_settle_amount_for_roi2_14d\", \"total_order_settle_count_for_roi2_14d\",\n  \"total_cost_per_pay_order_settle_for_roi2_14d\", \"total_order_settle_amount_rate_for_roi2_14d\", \"total_order_settle_count_rate_for_roi2_14d\",\n  \"total_prepay_and_pay_settle_roi2_30d\", \"total_order_settle_amount_for_roi2_30d\", \"total_order_settle_count_for_roi2_30d\",\n  \"total_cost_per_pay_order_settle_for_roi2_30d\", \"total_order_settle_amount_rate_for_roi2_30d\", \"total_order_settle_count_rate_for_roi2_30d\",\n  \"total_prepay_and_pay_settle_roi2_90d\", \"total_order_settle_amount_for_roi2_90d\", \"total_order_settle_count_for_roi2_90d\",\n  \"total_cost_per_pay_order_settle_for_roi2_90d\", \"total_order_settle_amount_rate_for_roi2_90d\", \"total_order_settle_count_rate_for_roi2_90d\",\n  \"video_like_count_for_roi2\", \"video_follow_count_for_roi2\", \"video_avg_watch_duration_for_roi2\",\n  \"video_play_count_for_roi2_v2\", \"video_play_finish_count_for_roi2_v2\", \"video_play_finish_rate_for_roi2_v2\",\n  \"video_comment_count_for_roi2_v2\", \"video_play_duration_2s_rate_for_roi2\", \"video_play_duration_3s_rate_for_roi2\",\n  \"video_play_duration_5s_rate_for_roi2\", \"video_play_duration_10s_rate_for_roi2\",\n  \"heat_stat_cost_for_roi2\", \"heat_total_pay_order_count_for_roi2\", \"heat_total_pay_order_gmv_for_roi2\", \"heat_total_prepay_and_pay_order_roi2\",\n  \"additional_delivery_stat_cost_for_roi2_assist\", \"additional_delivery_total_pay_order_count_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_include_coupon_for_roi2_assist\", \"additional_delivery_total_prepay_and_pay_order_roi2_assist\",\n  \"additional_delivery_show_cnt_for_roi2_assist\", \"additional_delivery_ctr_for_roi2_assist\", \"additional_delivery_click_cnt_for_roi2_assist\",\n  \"additional_delivery_convert_rate_for_roi2_assist\", \"additional_delivery_total_pay_order_gmv_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_coupon_amount_for_roi2_assist\", \"additional_delivery_total_ecom_platform_subsidy_amount_for_roi2_assist\",\n  \"additional_delivery_total_unfinished_estimate_order_gmv_for_roi2_assist\", \"additional_delivery_pay_convert_cost_for_roi2_assist_v2\",\n  \"additional_delivery_pay_convert_cnt_for_roi2_assist_v2\"\n];\n\nconst OTHER_DIMS = [\"roi2_other_creative_name\", \"stat_time_day\"];\nconst OTHER_IND_KEYS = [\n  \"total_pay_order_count_for_roi2\", \"total_pay_order_gmv_include_coupon_for_roi2\", \"total_pay_order_gmv_rate_for_roi2\",\n  \"total_pay_order_gmv_for_roi2\", \"total_pay_order_coupon_amount_for_roi2\", \"total_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_prepay_order_count_for_roi2\", \"total_prepay_order_gmv_for_roi2\", \"total_unfinished_estimate_order_gmv_for_roi2\"\n];\n\nfunction buildParams(segment, account, dataTopic, accessToken) {\n  const advertiser_id = account.advertiser_id;\n  const aweme_id = account.aweme_id || \"\";\n  const start_time = segment.start_time;\n  const end_time = segment.end_time;\n  const page = 1;\n  const page_size = 100;\n\n  let dimensions, filters, metrics, order_by;\n\n  if (dataTopic === DATA_TOPIC.LIVE) {\n    dimensions = JSON.stringify(LIVE_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(LIVE_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }]);\n  } else if (dataTopic === DATA_TOPIC.VIDEO) {\n    dimensions = JSON.stringify(VIDEO_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(VIDEO_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }, { field: \"material_id\", type: 1 }]);\n  } else {\n    dimensions = JSON.stringify(OTHER_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(OTHER_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }]);\n  }\n\n  return {\n    access_token: accessToken,\n    advertiser_id,\n    aweme_id,\n    account_name: account.account_name,\n    data_topic: dataTopic,\n    start_time,\n    end_time,\n    dimensions,\n    filters,\n    metrics,\n    order_by,\n    page,\n    page_size\n  };\n}\n\n// ---------- n8n 入口 ----------\n// Token 来源：优先「查库取Token」；需要刷新时从「Token刷新」HTTP 节点取 data.access_token，或从刷新分支上的 Set/Code（如「构造Token」）取 access_token；也可用上游 item 或环境变量（请按实际节点名修改）\n// const tokenFromDb = $(巨量千川token查询')?.first()?.json?.access_token;\n// const tokenFromRefreshNode = $('Token刷新')?.first()?.json?.data?.access_token;\n// const tokenFromSet = $('构造Token')?.first()?.json?.access_token;\n// const tokenFromInput = $input.first()?.json?.access_token;\n// const accessToken = tokenFromDb || tokenFromRefreshNode || tokenFromSet || tokenFromInput || $env?.OCEAN_ENGINE_ACCESS_TOKEN;\nconst accessToken = $('Access Token是否有效').first().json.access_token\n\nif (!accessToken) {\n  throw new Error(\"缺少 access_token，请确保上游有「查库取Token」或「刷新后写回库」节点，或在本流程前提供 access_token\");\n}\n\n// 时间拆分节点输出的多条 item（每条只有 start_time, end_time，可能带 mode 等）\nconst timeSegments = $input.all().map((i) => i.json);\n\nconst topics = [DATA_TOPIC.LIVE, DATA_TOPIC.VIDEO, DATA_TOPIC.OTHER];\nconst out = [];\n\nfor (const segment of timeSegments) {\n  for (const account of ACCOUNTS) {\n    for (const dataTopic of topics) {\n      out.push({ json: buildParams(segment, account, dataTopic, accessToken) });\n    }\n  }\n}\n\nreturn out;\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: 'Code in JavaScript' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        1536
+      ],
+      "id": "cfe7450a-d5bc-4ba8-a0a0-f7f42a8de8ac",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2384,
+        1536
+      ],
+      "id": "e8b2224e-0d5a-42a2-ae1c-9a38d95bb0dd",
+      "name": "获取千川财务数据",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '提取财务数据' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        1536
+      ],
+      "id": "7581180d-0af0-42a8-aa97-ed7bec419f08",
+      "name": "提取财务数据"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2880,
+        1536
+      ],
+      "id": "3e52b823-5664-4270-a619-5041f653709b",
+      "name": "分批导入其它创意数据1"
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "ods_千川素材_其他",
+          "mode": "list",
+          "cachedResultName": "ods_千川素材_其他"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3136,
+        1552
+      ],
+      "id": "b3e7718a-a766-449a-8e03-4f63584f179b",
+      "name": "ods_千川__财务_增量更新",
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - Edit 组合并划分每次请求参数 ==========\n// 输入：时间拆分节点输出的多条 item，每条仅 { start_time, end_time }\n//       token 从「查库取Token」或刷新分支的节点取（见下方 tokenSource 配置）\n// 输出：多条 item，每条 = 一次 API 请求的完整参数（时间段 × 账户 × data_topic）\n//       下游按 data_topic 分三路（LIVE/VIDEO/OTHER）接三个 HTTP 请求节点\n\nconst DATA_TOPIC = {\n  LIVE: \"SITE_PROMOTION_POST_DATA_LIVE\",\n  VIDEO: \"SITE_PROMOTION_POST_DATA_VIDEO\",\n  OTHER: \"SITE_PROMOTION_POST_DATA_OTHER\"\n};\n\n// 账户列表：与 Python accounts_to_fetch 一致，按需修改\nconst ACCOUNTS = [\n  { advertiser_id: \"1810151981662283\", aweme_id: \"95882467048\", account_name: \"地理八分钟\" },\n  { advertiser_id: \"1841239871244042\", aweme_id: \"1748646316999804\", account_name: \"历史八分钟\" },\n  { advertiser_id: \"1841239871244042\", aweme_id: \"2817420429893860\", account_name: \"会员直播间\" },\n  { advertiser_id: \"1854815081234699\", aweme_id: \"96940362400\", account_name: \"乐乐伴学\" },\n  { advertiser_id: \"1854731147621504\", aweme_id: \"2817420429893860\", account_name: \"会员直播间\" },\n  { advertiser_id: \"1854730832145883\", aweme_id: \"7467699792727917625\", account_name: \"三五小星世界历史\" }\n];\n\nconst LIVE_DIMS = [\"anchor_id\", \"stat_time_day\", \"roi2_material_anchor_name\"];\nconst LIVE_IND_KEYS = [\n  \"live_show_count_exclude_video_for_roi2\", \"live_watch_count_exclude_video_for_roi2\",\n  \"live_cvr_rate_exclude_video_for_roi2\", \"live_convert_rate_exclude_video_for_roi2\",\n  \"total_pay_order_count_for_roi2_fork\", \"total_prepay_order_count_for_roi2_fork\",\n  \"total_pay_order_gmv_include_coupon_for_roi2_fork\", \"total_pay_order_gmv_for_roi2_fork\",\n  \"total_prepay_order_gmv_for_roi2_fork\", \"total_unfinished_estimate_order_gmv_for_roi2_fork\",\n  \"stat_cost_for_roi2_fork\", \"basic_stat_cost_for_roi2_v2_fork\", \"live_exclude_video_ecpm_for_roi2\",\n  \"live_exclude_video_cpc_for_roi2\", \"total_cost_per_pay_order_for_roi2_fork\",\n  \"total_prepay_and_pay_order_roi2_fork\", \"total_pay_order_coupon_amount_for_roi2_fork\",\n  \"total_ecom_platform_subsidy_amount_for_roi2_fork\", \"total_prepay_and_pay_settle_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_overall_roi2_1h\", \"total_prepay_and_pay_settle_overall_roi2_1h\",\n  \"total_order_settle_amount_for_roi2_1h\", \"total_order_settle_count_for_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_roi2_1h\", \"total_order_real_settle_amount_for_roi2_1h\",\n  \"no_refund_ecom_coupon_amount_for_roi2\", \"no_refund_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_order_settle_amount_rate_for_roi2_1h\", \"total_order_settle_count_rate_for_roi2_1h\",\n  \"total_refund_order_count_for_roi2_1h\", \"total_refund_order_gmv_for_roi2_1h_all\",\n  \"total_refund_order_gmv_for_roi2_1h_rate\", \"total_prepay_and_pay_settle_roi2_7d\",\n  \"total_order_settle_amount_for_roi2_7d\", \"total_order_settle_count_for_roi2_7d\",\n  \"total_cost_per_pay_order_settle_for_roi2_7d\", \"total_order_settle_amount_rate_for_roi2_7d\",\n  \"total_order_settle_count_rate_for_roi2_7d\", \"total_prepay_and_pay_settle_roi2_14d\",\n  \"total_order_settle_amount_for_roi2_14d\", \"total_order_settle_count_for_roi2_14d\",\n  \"total_cost_per_pay_order_settle_for_roi2_14d\", \"total_order_settle_amount_rate_for_roi2_14d\",\n  \"total_order_settle_count_rate_for_roi2_14d\", \"total_prepay_and_pay_settle_roi2_30d\",\n  \"total_order_settle_amount_for_roi2_30d\", \"total_order_settle_count_for_roi2_30d\",\n  \"total_cost_per_pay_order_settle_for_roi2_30d\", \"total_order_settle_amount_rate_for_roi2_30d\",\n  \"total_order_settle_count_rate_for_roi2_30d\", \"total_prepay_and_pay_settle_roi2_90d\",\n  \"total_order_settle_amount_for_roi2_90d\", \"total_order_settle_count_for_roi2_90d\",\n  \"total_cost_per_pay_order_settle_for_roi2_90d\", \"total_order_settle_amount_rate_for_roi2_90d\",\n  \"total_order_settle_count_rate_for_roi2_90d\", \"live_follow_count_for_roi2\",\n  \"live_comment_count_for_roi2\", \"live_like_count_for_roi2\",\n  \"additional_delivery_stat_cost_for_roi2_assist\", \"additional_delivery_total_pay_order_count_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_include_coupon_for_roi2_assist\", \"additional_delivery_total_prepay_and_pay_order_roi2_assist\",\n  \"additional_delivery_show_cnt_for_roi2_assist\", \"additional_delivery_ctr_for_roi2_assist\",\n  \"additional_delivery_click_cnt_for_roi2_assist\", \"additional_delivery_convert_rate_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_for_roi2_assist\", \"additional_delivery_total_pay_order_coupon_amount_for_roi2_assist\",\n  \"additional_delivery_total_ecom_platform_subsidy_amount_for_roi2_assist\", \"additional_delivery_total_unfinished_estimate_order_gmv_for_roi2_assist\",\n  \"additional_delivery_pay_convert_cost_for_roi2_assist_v2\", \"additional_delivery_pay_convert_cnt_for_roi2_assist_v2\",\n  \"stat_cost_for_overall_roi2\"\n];\n\nconst VIDEO_DIMS = [\"stat_time_day\", \"roi2_material_video_name\", \"roi2_material_video_type\", \"material_id\", \"material_create_time_v2\", \"roi2_material_upload_time\"];\nconst VIDEO_IND_KEYS = [\n  \"live_show_count_for_roi2_v2\", \"live_watch_count_for_roi2_v2\", \"live_cvr_rate_for_roi2_v2\", \"live_convert_rate_for_roi2_v2\",\n  \"total_pay_order_count_for_roi2\", \"total_pay_order_gmv_include_coupon_for_roi2\", \"total_pay_order_gmv_rate_for_roi2\",\n  \"stat_cost_for_roi2\", \"cost_rate_for_roi2\", \"basic_stat_cost_for_roi2_v2\", \"total_prepay_and_pay_order_roi2\",\n  \"total_cost_per_pay_order_for_roi2\", \"total_pay_order_gmv_for_roi2\", \"total_ecpm_for_roi2\", \"total_cpc_for_roi2\",\n  \"total_pay_order_coupon_amount_for_roi2\", \"total_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_prepay_order_count_for_roi2\", \"total_prepay_order_gmv_for_roi2\", \"total_unfinished_estimate_order_gmv_for_roi2\",\n  \"stat_cost_for_overall_roi2\", \"total_prepay_and_pay_settle_overall_roi2_1h\", \"total_cost_per_pay_order_settle_for_overall_roi2_1h\",\n  \"total_prepay_and_pay_settle_roi2_1h\", \"total_order_settle_amount_for_roi2_1h\", \"total_order_settle_count_for_roi2_1h\",\n  \"total_cost_per_pay_order_settle_for_roi2_1h\", \"total_order_real_settle_amount_for_roi2_1h\",\n  \"no_refund_ecom_coupon_amount_for_roi2\", \"no_refund_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_order_settle_amount_rate_for_roi2_1h\", \"total_order_settle_count_rate_for_roi2_1h\",\n  \"total_refund_order_count_for_roi2_1h\", \"total_refund_order_gmv_for_roi2_1h_all\", \"total_refund_order_gmv_for_roi2_1h_rate\",\n  \"total_prepay_and_pay_settle_roi2_7d\", \"total_order_settle_amount_for_roi2_7d\", \"total_order_settle_count_for_roi2_7d\",\n  \"total_cost_per_pay_order_settle_for_roi2_7d\", \"total_order_settle_amount_rate_for_roi2_7d\", \"total_order_settle_count_rate_for_roi2_7d\",\n  \"total_prepay_and_pay_settle_roi2_14d\", \"total_order_settle_amount_for_roi2_14d\", \"total_order_settle_count_for_roi2_14d\",\n  \"total_cost_per_pay_order_settle_for_roi2_14d\", \"total_order_settle_amount_rate_for_roi2_14d\", \"total_order_settle_count_rate_for_roi2_14d\",\n  \"total_prepay_and_pay_settle_roi2_30d\", \"total_order_settle_amount_for_roi2_30d\", \"total_order_settle_count_for_roi2_30d\",\n  \"total_cost_per_pay_order_settle_for_roi2_30d\", \"total_order_settle_amount_rate_for_roi2_30d\", \"total_order_settle_count_rate_for_roi2_30d\",\n  \"total_prepay_and_pay_settle_roi2_90d\", \"total_order_settle_amount_for_roi2_90d\", \"total_order_settle_count_for_roi2_90d\",\n  \"total_cost_per_pay_order_settle_for_roi2_90d\", \"total_order_settle_amount_rate_for_roi2_90d\", \"total_order_settle_count_rate_for_roi2_90d\",\n  \"video_like_count_for_roi2\", \"video_follow_count_for_roi2\", \"video_avg_watch_duration_for_roi2\",\n  \"video_play_count_for_roi2_v2\", \"video_play_finish_count_for_roi2_v2\", \"video_play_finish_rate_for_roi2_v2\",\n  \"video_comment_count_for_roi2_v2\", \"video_play_duration_2s_rate_for_roi2\", \"video_play_duration_3s_rate_for_roi2\",\n  \"video_play_duration_5s_rate_for_roi2\", \"video_play_duration_10s_rate_for_roi2\",\n  \"heat_stat_cost_for_roi2\", \"heat_total_pay_order_count_for_roi2\", \"heat_total_pay_order_gmv_for_roi2\", \"heat_total_prepay_and_pay_order_roi2\",\n  \"additional_delivery_stat_cost_for_roi2_assist\", \"additional_delivery_total_pay_order_count_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_gmv_include_coupon_for_roi2_assist\", \"additional_delivery_total_prepay_and_pay_order_roi2_assist\",\n  \"additional_delivery_show_cnt_for_roi2_assist\", \"additional_delivery_ctr_for_roi2_assist\", \"additional_delivery_click_cnt_for_roi2_assist\",\n  \"additional_delivery_convert_rate_for_roi2_assist\", \"additional_delivery_total_pay_order_gmv_for_roi2_assist\",\n  \"additional_delivery_total_pay_order_coupon_amount_for_roi2_assist\", \"additional_delivery_total_ecom_platform_subsidy_amount_for_roi2_assist\",\n  \"additional_delivery_total_unfinished_estimate_order_gmv_for_roi2_assist\", \"additional_delivery_pay_convert_cost_for_roi2_assist_v2\",\n  \"additional_delivery_pay_convert_cnt_for_roi2_assist_v2\"\n];\n\nconst OTHER_DIMS = [\"roi2_other_creative_name\", \"stat_time_day\"];\nconst OTHER_IND_KEYS = [\n  \"total_pay_order_count_for_roi2\", \"total_pay_order_gmv_include_coupon_for_roi2\", \"total_pay_order_gmv_rate_for_roi2\",\n  \"total_pay_order_gmv_for_roi2\", \"total_pay_order_coupon_amount_for_roi2\", \"total_ecom_platform_subsidy_amount_for_roi2\",\n  \"total_prepay_order_count_for_roi2\", \"total_prepay_order_gmv_for_roi2\", \"total_unfinished_estimate_order_gmv_for_roi2\"\n];\n\nfunction buildParams(segment, account, dataTopic, accessToken) {\n  const advertiser_id = account.advertiser_id;\n  const aweme_id = account.aweme_id || \"\";\n  const start_time = segment.start_time;\n  const end_time = segment.end_time;\n  const page = 1;\n  const page_size = 100;\n\n  let dimensions, filters, metrics, order_by;\n\n  if (dataTopic === DATA_TOPIC.LIVE) {\n    dimensions = JSON.stringify(LIVE_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(LIVE_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }]);\n  } else if (dataTopic === DATA_TOPIC.VIDEO) {\n    dimensions = JSON.stringify(VIDEO_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(VIDEO_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }, { field: \"material_id\", type: 1 }]);\n  } else {\n    dimensions = JSON.stringify(OTHER_DIMS);\n    filters = JSON.stringify([\n      { field: \"anchor_id\", operator: 7, values: [aweme_id] },\n      { field: \"ecp_app_id\", operator: 7, values: [\"1\", \"2\"] },\n      { field: \"aggregate_smart_bid_type\", operator: 7, values: [\"0\"] }\n    ]);\n    metrics = JSON.stringify(OTHER_IND_KEYS);\n    order_by = JSON.stringify([{ field: \"stat_time_day\", type: 1 }]);\n  }\n\n  return {\n    access_token: accessToken,\n    advertiser_id,\n    aweme_id,\n    account_name: account.account_name,\n    data_topic: dataTopic,\n    start_time,\n    end_time,\n    dimensions,\n    filters,\n    metrics,\n    order_by,\n    page,\n    page_size\n  };\n}\n\n// ---------- n8n 入口 ----------\n// Token 来源：优先「查库取Token」；需要刷新时从「Token刷新」HTTP 节点取 data.access_token，或从刷新分支上的 Set/Code（如「构造Token」）取 access_token；也可用上游 item 或环境变量（请按实际节点名修改）\n// const tokenFromDb = $(巨量千川token查询')?.first()?.json?.access_token;\n// const tokenFromRefreshNode = $('Token刷新')?.first()?.json?.data?.access_token;\n// const tokenFromSet = $('构造Token')?.first()?.json?.access_token;\n// const tokenFromInput = $input.first()?.json?.access_token;\n// const accessToken = tokenFromDb || tokenFromRefreshNode || tokenFromSet || tokenFromInput || $env?.OCEAN_ENGINE_ACCESS_TOKEN;\nconst accessToken = $('Access Token是否有效').first().json.access_token\n\nif (!accessToken) {\n  throw new Error(\"缺少 access_token，请确保上游有「查库取Token」或「刷新后写回库」节点，或在本流程前提供 access_token\");\n}\n\n// 时间拆分节点输出的多条 item（每条只有 start_time, end_time，可能带 mode 等）\nconst timeSegments = $input.all().map((i) => i.json);\n\nconst topics = [DATA_TOPIC.LIVE, DATA_TOPIC.VIDEO, DATA_TOPIC.OTHER];\nconst out = [];\n\nfor (const segment of timeSegments) {\n  for (const account of ACCOUNTS) {\n    for (const dataTopic of topics) {\n      out.push({ json: buildParams(segment, account, dataTopic, accessToken) });\n    }\n  }\n}\n\nreturn out;\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: 'Code in JavaScript1' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        480
+      ],
+      "id": "79f72fd5-af8a-4b93-a9f4-145820f6e90f",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2384,
+        480
+      ],
+      "id": "925ca498-6baf-4900-a78e-913039c52fb9",
+      "name": "获取千川财务数据1",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '提取财务数据1' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        480
+      ],
+      "id": "b10aad34-a5de-4f98-b36d-d469e3f35f52",
+      "name": "提取财务数据1"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2880,
+        480
+      ],
+      "id": "52223d09-5bc3-44ff-9209-b1556115217a",
+      "name": "分批导入其它创意数据2"
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "ods_千川素材_其他",
+          "mode": "list",
+          "cachedResultName": "ods_千川素材_其他"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3136,
+        496
+      ],
+      "id": "e5ba7d55-3cc1-4655-ab70-fcb2a9d0074d",
+      "name": "ods_千川__财务_增量更新1",
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：千川素材 - 时间拆分 ==========\n// 输入：Run Once for All Items，取 items[0].json 的 start_time、end_time（格式 \"YYYY-MM-DD HH:mm:ss\"）\n// 或由上游传入单条：{ start_time, end_time }；可选 mode: \"minute\" | \"hour\" | \"day\"\n// 输出：多条 item，每条 { start_time, end_time }，供下游「按时间段 + 账户」请求 API\n\nfunction parseDt(str) {\n  const d = new Date(str.replace(\" \", \"T\"));\n  if (isNaN(d.getTime())) throw new Error(\"时间格式错误，需 YYYY-MM-DD HH:mm:ss\");\n  return d;\n}\n\nfunction formatDt(d) {\n  const y = d.getFullYear();\n  const m = String(d.getMonth() + 1).padStart(2, \"0\");\n  const day = String(d.getDate()).padStart(2, \"0\");\n  const h = String(d.getHours()).padStart(2, \"0\");\n  const min = String(d.getMinutes()).padStart(2, \"0\");\n  const s = String(d.getSeconds()).padStart(2, \"0\");\n  return `${y}-${m}-${day} ${h}:${min}:${s}`;\n}\n\n/** 按天再按分钟拆分：每段为 [整分:00, 整分:59] */\nfunction splitTimeByDayThenMinute(totalStart, totalEnd) {\n  const list = [];\n  let currentDay = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (currentDay >= endDt) return list;\n\n  while (currentDay < endDt) {\n    const dayStart = new Date(currentDay.getFullYear(), currentDay.getMonth(), currentDay.getDate(), 0, 0, 0);\n    let dayEnd = new Date(dayStart);\n    dayEnd.setDate(dayEnd.getDate() + 1);\n    dayEnd.setSeconds(dayEnd.getSeconds() - 1);\n    if (dayEnd > endDt) dayEnd = endDt;\n\n    let currentMinute = dayStart;\n    while (currentMinute <= dayEnd) {\n      const minuteStart = new Date(currentMinute);\n      minuteStart.setSeconds(0);\n      let minuteEnd = new Date(minuteStart);\n      minuteEnd.setMinutes(minuteEnd.getMinutes() + 1);\n      minuteEnd.setSeconds(minuteEnd.getSeconds() - 1);\n      if (minuteEnd > endDt) minuteEnd = endDt;\n      list.push({ start_time: formatDt(minuteStart), end_time: formatDt(minuteEnd) });\n      currentMinute = new Date(minuteStart);\n      currentMinute.setMinutes(currentMinute.getMinutes() + 1);\n    }\n    currentDay = new Date(dayStart);\n    currentDay.setDate(currentDay.getDate() + 1);\n  }\n  return list;\n}\n\n/** 按小时拆分：每段 整点:00:00 ~ 整点:59:59 */\nfunction splitTimeByHour(totalStart, totalEnd) {\n  const list = [];\n  const startDt = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (startDt >= endDt) return list;\n\n  let current = new Date(startDt);\n  current.setMinutes(0, 0, 0);\n  while (current < endDt) {\n    let hourEnd = new Date(current);\n    hourEnd.setHours(hourEnd.getHours() + 1);\n    hourEnd.setSeconds(hourEnd.getSeconds() - 1);\n    if (hourEnd > endDt) hourEnd = endDt;\n    if (current < hourEnd) {\n      list.push({ start_time: formatDt(current), end_time: formatDt(hourEnd) });\n    }\n    current.setHours(current.getHours() + 1);\n  }\n  return list;\n}\n\n/** 按自然日拆分：当天 00:00:00 ~ 23:59:59 */\nfunction splitTimeByDay(totalStart, totalEnd) {\n  const list = [];\n  const startDt = parseDt(totalStart);\n  const endDt = parseDt(totalEnd);\n  if (startDt >= endDt) return list;\n\n  let current = new Date(startDt);\n  current.setHours(0, 0, 0, 0);\n  while (current < endDt) {\n    let dayEnd = new Date(current);\n    dayEnd.setDate(dayEnd.getDate() + 1);\n    dayEnd.setSeconds(dayEnd.getSeconds() - 1);\n    if (dayEnd > endDt) dayEnd = endDt;\n    if (current < dayEnd) {\n      list.push({ start_time: formatDt(current), end_time: formatDt(dayEnd) });\n    }\n    current.setDate(current.getDate() + 1);\n  }\n  return list;\n}\n\n// ---------- n8n 入口 ----------\nconst input = $input.first();\nconst json = input?.json || {};\nconst startTime = json.start_time || json.startTime;\nconst endTime = json.end_time || json.endTime;\nconst mode = (json.mode || \"hour\").toLowerCase();\n\nif (!startTime || !endTime) {\n  throw new Error(\"缺少 start_time 或 end_time\");\n}\n\nlet ranges;\nif (mode === \"hour\") {\n  ranges = splitTimeByHour(startTime, endTime);\n} else if (mode === \"day\") {\n  ranges = splitTimeByDay(startTime, endTime);\n} else {\n  ranges = splitTimeByDayThenMinute(startTime, endTime);\n}\n\n// 若上游还传了 advertiser_id、aweme_id、account_name、data_topic 等，一并带到每条\nconst extra = {};\n[\"access_token\" ,\"advertiser_id\", \"aweme_id\", \"account_name\", \"data_topic\"].forEach((k) => {\n  if (json[k] !== undefined) extra[k] = json[k];\n});\n\nreturn ranges.map((r) => ({ json: { ...r, ...extra } }));\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '时间拆分-小时' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        480
+      ],
+      "id": "4a8374f8-59e0-4e34-88b6-1eaf23bd5293",
+      "name": "时间拆分-小时"
+    },
+    {
+      "parameters": {
+        "content": "## 📊 千川数据采集模块\n\n采集内容：\n- 直播画面分钟级数据\n- 视频投放分钟级数据\n- 创意数据\n- 财务数据\n\n对应Python: qianchuan.py",
+        "height": 1508,
+        "width": 4544
+      },
+      "id": "7cd2b725-a104-4390-88fe-abcab02776c4",
+      "name": "📊 千川采集说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        336
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\n\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        464
+      ],
+      "id": "4d97427c-4fa3-4b92-816e-d74e05eb3290",
+      "name": "清理内存"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\n\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        736
+      ],
+      "id": "4b4ce36d-ab7c-477f-927a-924a617a2ae4",
+      "name": "清理内存1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\n\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        992
+      ],
+      "id": "a6911a9c-f2e7-4875-b32f-bb4025a66399",
+      "name": "清理内存2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\n\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        1248
+      ],
+      "id": "0d734251-7fb9-4801-a4c2-eb0922df0f6a",
+      "name": "清理内存3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\n\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        1520
+      ],
+      "id": "291eb806-5628-45f4-9241-322f3b345580",
+      "name": "清理内存4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\n\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        768
+      ],
+      "id": "9c659521-f740-4ac2-b0c9-00d57002ff3b",
+      "name": "清理内存5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\n\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        1024
+      ],
+      "id": "43d149da-242f-41a8-b942-462fb4bc9187",
+      "name": "清理内存6"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\n\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        1280
+      ],
+      "id": "803614ab-1317-4287-aee7-a278a9436432",
+      "name": "清理内存7"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3376,
+        768
+      ],
+      "id": "5af99f6a-beb7-4f52-9980-9a2ac0e9e8c8",
+      "name": "Wait",
+      "webhookId": "11cf2081-6ff4-4d69-b1cc-9e57d9f75976"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3376,
+        1024
+      ],
+      "id": "fdcb3bdd-807a-4566-a2b1-4ce051327718",
+      "name": "Wait1",
+      "webhookId": "11cf2081-6ff4-4d69-b1cc-9e57d9f75976"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3376,
+        1280
+      ],
+      "id": "133697f6-962c-4e83-ae27-2cf3dffb9bc5",
+      "name": "Wait2",
+      "webhookId": "11cf2081-6ff4-4d69-b1cc-9e57d9f75976"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        1024
+      ],
+      "id": "6d84de90-f283-4782-b5c4-042b518c51c3",
+      "name": "千川素材采集模块"
+    }
+  ],
+  "pinData": {
+    "千川素材采集模块": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "巨量千川参数配置": {
+      "main": [
+        [
+          {
+            "node": "刷新Access Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "刷新Access Token": {
+      "main": [
+        [
+          {
+            "node": "配置请求参数",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "配置请求参数": {
+      "main": [
+        [
+          {
+            "node": "时间拆分-分钟",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "有效token写回数据库",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "时间拆分-小时",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "时间拆分-天",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Access Token是否有效": {
+      "main": [
+        [
+          {
+            "node": "配置请求参数1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "巨量千川参数配置",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "巨量千川token查询": {
+      "main": [
+        [
+          {
+            "node": "Access Token是否有效",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "配置请求参数1": {
+      "main": [
+        [
+          {
+            "node": "时间拆分-分钟",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "时间拆分-小时",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "时间拆分-天",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "组合请求参数": {
+      "main": [
+        [
+          {
+            "node": "是否直播画面接口",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否视频接口": {
+      "main": [
+        [],
+        [
+          {
+            "node": "分批导入其它创意数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否直播画面接口": {
+      "main": [
+        [],
+        [
+          {
+            "node": "是否视频接口",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分批导入直播画面数据": {
+      "main": [
+        [
+          {
+            "node": "清理内存1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "获取直播画面分钟级数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分批导入视频数据": {
+      "main": [
+        [
+          {
+            "node": "清理内存2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "获取视频投放分钟级数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分批导入其它创意数据": {
+      "main": [
+        [
+          {
+            "node": "清理内存3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "获取其它创意分钟级数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取直播画面分钟级数据": {
+      "main": [
+        [
+          {
+            "node": "提取直播数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取视频投放分钟级数据": {
+      "main": [
+        [
+          {
+            "node": "提取视频数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取其它创意分钟级数据": {
+      "main": [
+        [
+          {
+            "node": "提取其它数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取直播数据": {
+      "main": [
+        [
+          {
+            "node": "ods_千川素材_直播画面_增量更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取视频数据": {
+      "main": [
+        [
+          {
+            "node": "ods_千川素材_视频投放_增量更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取其它数据": {
+      "main": [
+        [
+          {
+            "node": "ods_千川素材_其他创意_增量更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ods_千川素材_直播画面_增量更新": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ods_千川素材_视频投放_增量更新": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ods_千川素材_其他创意_增量更新": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "时间拆分-天": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "时间拆分-分钟": {
+      "main": [
+        [
+          {
+            "node": "组合请求参数",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "获取千川财务数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取千川财务数据": {
+      "main": [
+        [
+          {
+            "node": "提取财务数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取财务数据": {
+      "main": [
+        [
+          {
+            "node": "分批导入其它创意数据1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分批导入其它创意数据1": {
+      "main": [
+        [
+          {
+            "node": "清理内存4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ods_千川__财务_增量更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ods_千川__财务_增量更新": {
+      "main": [
+        [
+          {
+            "node": "分批导入其它创意数据1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "获取千川财务数据1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取千川财务数据1": {
+      "main": [
+        [
+          {
+            "node": "提取财务数据1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取财务数据1": {
+      "main": [
+        [
+          {
+            "node": "分批导入其它创意数据2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分批导入其它创意数据2": {
+      "main": [
+        [
+          {
+            "node": "清理内存",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ods_千川__财务_增量更新1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ods_千川__财务_增量更新1": {
+      "main": [
+        [
+          {
+            "node": "分批导入其它创意数据2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "时间拆分-小时": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清理内存": {
+      "main": [
+        []
+      ]
+    },
+    "清理内存1": {
+      "main": [
+        []
+      ]
+    },
+    "清理内存2": {
+      "main": [
+        []
+      ]
+    },
+    "清理内存3": {
+      "main": [
+        []
+      ]
+    },
+    "清理内存4": {
+      "main": [
+        []
+      ]
+    },
+    "清理内存5": {
+      "main": [
+        [
+          {
+            "node": "分批导入直播画面数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清理内存6": {
+      "main": [
+        [
+          {
+            "node": "分批导入视频数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清理内存7": {
+      "main": [
+        [
+          {
+            "node": "分批导入其它创意数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "清理内存5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "清理内存6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "清理内存7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "千川素材采集模块": {
+      "main": [
+        [
+          {
+            "node": "巨量千川token查询",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "1a60bd1f-db88-470b-82b0-38fe83b86b3e",
+  "meta": {
+    "instanceId": "4b9303c6c8a2eec511b651c17635d4281c370f70a0983d8940cfac69c6d627a3"
+  },
+  "id": "U4UaGarAzJZ8G3kK",
+  "tags": []
+}

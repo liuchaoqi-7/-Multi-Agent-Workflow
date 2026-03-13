@@ -1,0 +1,897 @@
+[2026-02-08T23:26:59.230+0800] {processor.py:161} INFO - Started process (PID=25869) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:26:59.230+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:26:59.230+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:26:59.230+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:26:59.245+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:26:59.243+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:26:59.245+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:26:59.285+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.056 seconds
+[2026-02-08T23:28:15.857+0800] {processor.py:161} INFO - Started process (PID=27288) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:28:15.859+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:28:15.859+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:28:15.859+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:28:15.873+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:28:15.871+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:28:15.874+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:28:15.912+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.055 seconds
+[2026-02-08T23:29:30.096+0800] {processor.py:161} INFO - Started process (PID=28649) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:29:30.097+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:29:30.097+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:29:30.097+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:29:30.112+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:29:30.110+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:29:30.112+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:29:30.152+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.056 seconds
+[2026-02-08T23:30:51.240+0800] {processor.py:161} INFO - Started process (PID=30132) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:30:51.241+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:30:51.241+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:30:51.241+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:30:51.256+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:30:51.254+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:30:51.256+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:30:51.297+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.058 seconds
+[2026-02-08T23:32:11.575+0800] {processor.py:161} INFO - Started process (PID=31617) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:32:11.576+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:32:11.576+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:32:11.576+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:32:11.592+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:32:11.589+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:32:11.592+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:32:11.635+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.060 seconds
+[2026-02-08T23:34:05.805+0800] {processor.py:161} INFO - Started process (PID=33796) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:34:05.807+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:34:05.807+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:34:05.807+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:34:05.822+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:34:05.820+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:34:05.823+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:34:05.868+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.063 seconds
+[2026-02-08T23:35:26.487+0800] {processor.py:161} INFO - Started process (PID=35295) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:35:26.488+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:35:26.488+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:35:26.488+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:35:26.503+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:35:26.500+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:35:26.503+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:35:26.542+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.055 seconds
+[2026-02-08T23:36:43.306+0800] {processor.py:161} INFO - Started process (PID=36714) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:36:43.307+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:36:43.307+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:36:43.307+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:36:43.321+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:36:43.319+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:36:43.321+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:36:43.358+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.052 seconds
+[2026-02-08T23:37:57.145+0800] {processor.py:161} INFO - Started process (PID=38079) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:37:57.146+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:37:57.147+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:37:57.147+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:37:57.161+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:37:57.159+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:37:57.161+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:37:57.200+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.055 seconds
+[2026-02-08T23:39:15.130+0800] {processor.py:161} INFO - Started process (PID=39520) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:39:15.131+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:39:15.131+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:39:15.131+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:39:15.146+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:39:15.144+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:39:15.146+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:39:15.187+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.057 seconds
+[2026-02-08T23:40:34.947+0800] {processor.py:161} INFO - Started process (PID=41068) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:40:34.948+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:40:34.949+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:40:34.949+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:40:34.963+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:40:34.960+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:40:34.963+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:40:35.003+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.056 seconds
+[2026-02-08T23:42:03.344+0800] {processor.py:161} INFO - Started process (PID=42706) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:42:03.345+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:42:03.345+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:42:03.345+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:42:03.360+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:42:03.357+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:42:03.360+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:42:03.401+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.057 seconds
+[2026-02-08T23:43:24.689+0800] {processor.py:161} INFO - Started process (PID=44220) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:43:24.690+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:43:24.690+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:43:24.690+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:43:24.706+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:43:24.704+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:43:24.706+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:43:24.760+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.072 seconds
+[2026-02-08T23:44:42.825+0800] {processor.py:161} INFO - Started process (PID=45637) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:44:42.826+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:44:42.826+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:44:42.826+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:44:42.840+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:44:42.838+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:44:42.841+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:44:42.880+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.055 seconds
+[2026-02-08T23:46:03.252+0800] {processor.py:161} INFO - Started process (PID=47123) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:46:03.253+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:46:03.253+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:46:03.253+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:46:03.268+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:46:03.265+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:46:03.268+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:46:03.308+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.056 seconds
+[2026-02-08T23:47:16.665+0800] {processor.py:161} INFO - Started process (PID=48476) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:47:16.666+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:47:16.666+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:47:16.666+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:47:16.681+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:47:16.678+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:47:16.681+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:47:16.720+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.055 seconds
+[2026-02-08T23:48:26.743+0800] {processor.py:161} INFO - Started process (PID=49763) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:48:26.744+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:48:26.744+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:48:26.744+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:48:26.760+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:48:26.758+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:48:26.760+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:48:26.801+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.058 seconds
+[2026-02-08T23:49:45.301+0800] {processor.py:161} INFO - Started process (PID=51223) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:49:45.302+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:49:45.302+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:49:45.302+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:49:45.318+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:49:45.315+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:49:45.318+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:49:45.365+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.065 seconds
+[2026-02-08T23:51:13.279+0800] {processor.py:161} INFO - Started process (PID=52820) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:51:13.279+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:51:13.280+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:51:13.280+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:51:13.296+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:51:13.294+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:51:13.296+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:51:13.343+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.064 seconds
+[2026-02-08T23:52:37.734+0800] {processor.py:161} INFO - Started process (PID=54382) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:52:37.735+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:52:37.735+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:52:37.735+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:52:37.751+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:52:37.749+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:52:37.751+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:52:37.798+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.065 seconds
+[2026-02-08T23:53:56.191+0800] {processor.py:161} INFO - Started process (PID=55819) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:53:56.191+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:53:56.192+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:53:56.192+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:53:56.207+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:53:56.205+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:53:56.207+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:53:56.254+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.064 seconds
+[2026-02-08T23:55:10.708+0800] {processor.py:161} INFO - Started process (PID=57185) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:55:10.709+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:55:10.710+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:55:10.710+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:55:10.724+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:55:10.722+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:55:10.724+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:55:10.762+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.054 seconds
+[2026-02-08T23:56:30.779+0800] {processor.py:161} INFO - Started process (PID=58663) to work on /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:56:30.780+0800] {processor.py:830} INFO - Processing file /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py for tasks to queue
+[2026-02-08T23:56:30.780+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:56:30.780+0800] {dagbag.py:538} INFO - Filling up the DagBag from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:56:30.798+0800] {logging_mixin.py:188} INFO - [2026-02-08T23:56:30.796+0800] {dagbag.py:348} ERROR - Failed to import: /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+Traceback (most recent call last):
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/dagbag.py", line 344, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py", line 125, in <module>
+    random_choice_venv = branching_virtualenv(choices=options)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 366, in __call__
+    op = self.operator_class(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/python.py", line 52, in __init__
+    super().__init__(
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/decorators/base.py", line 233, in __init__
+    super().__init__(task_id=task_id, **kwargs_to_upstream, **kwargs)
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 437, in apply_defaults
+    result = func(self, **kwargs, default_args=default_args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/operators/python.py", line 584, in __init__
+    raise AirflowException("PythonVirtualenvOperator requires virtualenv, please install it.")
+airflow.exceptions.AirflowException: PythonVirtualenvOperator requires virtualenv, please install it.
+[2026-02-08T23:56:30.798+0800] {processor.py:842} WARNING - No viable dags retrieved from /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py
+[2026-02-08T23:56:30.839+0800] {processor.py:183} INFO - Processing /Users/test/Applications(macos)/anaconda3/envs/airflow/lib/python3.11/site-packages/airflow/example_dags/example_branch_operator_decorator.py took 0.060 seconds

@@ -1,0 +1,33 @@
+/* 1. 节点卡片：利用 data-test-id 属性精准定位 */
+div[data-test-id="canvas-default-node"] {
+    border-radius: 16px !important;
+    border: 1.5px solid rgba(74, 144, 226, 0.2) !important; /* 淡淡的科技蓝边框 */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* 2. 节点悬停效果 */
+div[data-test-id="canvas-default-node"]:hover {
+    transform: translateY(-5px) scale(1.02) !important;
+    box-shadow: 0 15px 35px rgba(74, 144, 226, 0.15) !important;
+}
+
+/* 3. 连线美化：通过 class 模糊匹配 */
+[class*="connection-path"] {
+    stroke-width: 3px !important;
+    stroke: #4A90E2 !important;
+    filter: drop-shadow(0 0 3px rgba(74, 144, 226, 0.4)) !important;
+}
+
+/* 4. 画布背景：点阵优化 */
+.canvas-background {
+    background-image: radial-gradient(#efefef 1.5px, transparent 0) !important;
+    background-size: 32px 32px !important;
+}
+
+/* 5. 侧边栏及菜单微调 */
+aside[class*="sidebar"], .sidebar-container {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(15px) !important;
+}

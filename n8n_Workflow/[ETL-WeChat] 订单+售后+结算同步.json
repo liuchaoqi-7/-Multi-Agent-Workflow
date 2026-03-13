@@ -1,0 +1,1351 @@
+{
+  "name": "[ETL-WeChat] 订单+售后+结算同步",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dd124f1a-bcad-4ab3-ba6b-12f92b09fb7c",
+              "name": "appid",
+              "value": "={{ $('微信小店API采集').item.json.appid }}",
+              "type": "string"
+            },
+            {
+              "id": "0f002b25-a0bb-47e1-a0c6-1e7e880910cb",
+              "name": "secret",
+              "value": "={{ $('微信小店API采集').item.json.secret }}",
+              "type": "string"
+            },
+            {
+              "id": "728f0df4-5e32-4354-af8e-607d729b9f0c",
+              "name": "=start_date",
+              "value": "={{ $('微信小店API采集').first().json.start_time }}",
+              "type": "string"
+            },
+            {
+              "id": "0cf23071-a468-4d81-be72-cc183c709413",
+              "name": "=end_date",
+              "value": "={{ $('微信小店API采集').first().json.end_time }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        464
+      ],
+      "id": "9d9d5fc2-c1a1-4f2b-97d9-60ab9bb7d96d",
+      "name": "微信参数配置"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a1e06b5-8d5d-4ae2-95aa-15eabadec0ed",
+              "name": "body.access_token",
+              "value": "={{ $json.body.access_token }}",
+              "type": "string"
+            },
+            {
+              "id": "b6b78563-0020-477c-8a2a-3147c0f24a43",
+              "name": "=start_ts",
+              "value": "={{ Math.floor(new Date(2024, 5, 1, 0, 0, 0).getTime() / 1000) }}",
+              "type": "number"
+            },
+            {
+              "id": "69dc1441-2ece-4956-9151-38a664713e7d",
+              "name": "=end_ts",
+              "value": "={{ Math.floor(new Date().getTime() / 1000) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        928,
+        464
+      ],
+      "id": "5039c6b0-f865-47df-8e39-17ff8e4c4509",
+      "name": "微信AccessToken"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.weixin.qq.com/cgi-bin/token",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credential"
+            },
+            {
+              "name": "appid",
+              "value": "={{ $json.appid }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $json.secret }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        720,
+        464
+      ],
+      "id": "17353f3f-3dc1-416b-9022-286bd38eec2d",
+      "name": "刷新AccessToken",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.weixin.qq.com/channels/ec/order/list/get",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.accesstoken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"create_time_range\": {\n    \"start_time\": {{ $json.start_timestamp }},\n    \"end_time\": {{ $json.end_timestamp }}\n  },\n  \"page_size\": {{ $json.page_size }}\n}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "type": "body",
+                    "name": "next_key",
+                    "value": "={{ $response.body.next_key }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.has_more == false }}"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1616,
+        160
+      ],
+      "id": "78bd1ca4-06de-48e9-b617-7e92d85c0db6",
+      "name": "获取订单号",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  // 1. 安全获取 AccessToken\n  // 请确保这里 $('节点名称') 里的名称和您流程图里完全一致\n  const tokenNode = $('微信AccessToken').first();\n  const accessToken = tokenNode ? (tokenNode.json.body.access_token || tokenNode.json.access_token) : null;\n\n  if (!accessToken) {\n    console.log(\"⚠️ 警告: 未找到 AccessToken，请检查节点引用名称\");\n  }\n\n  // 2. 提取所有订单号 (flatMap 自动展平数组)\n  // 微信接口通常返回字段是 order_id_list，如果是其他名字(如 orders)请在这里修改\n  const allOrderIds = $input.all().flatMap(item => {\n    return item.json.order_id_list || item.json.orders || [];\n  });\n\n  // 3. 去重 (防止重复抓取)\n  const uniqueIds = [...new Set(allOrderIds)];\n\n  // 4. 【核心逻辑】构建返回数据\n  if (uniqueIds.length > 0) {\n    //情况 A: 有订单，正常返回，is_empty = false\n    return uniqueIds.map(orderId => ({\n      json: {\n        order_id: orderId,         // 订单号\n        access_token: accessToken, // 透传 Token\n        is_empty: false            // 标记：这是有效数据\n      }\n    }));\n  } else {\n    // 情况 B: 没订单，返回一个“伪造包”保活，is_empty = true\n    // 这样 n8n 就会认为“节点执行成功”，继续往下走，不会卡死循环\n    return [{\n      json: {\n        order_id: null,\n        is_empty: true // 标记：这是空数据，后面要过滤掉\n      }\n    }];\n  }\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  // 出错也返回一个伪造包，防止整个任务挂掉\n  return [{ json: { is_empty: true, error: error.message } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        160
+      ],
+      "id": "9686187a-0f26-4586-83ac-c274eb6be303",
+      "name": "提取订单号",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.weixin.qq.com/channels/ec/order/get",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "order_id",
+              "value": "={{ $json.order_id }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2576,
+        144
+      ],
+      "id": "73e7a95c-8dbe-4609-8f9a-bab981d124f7",
+      "name": "获取订单详情",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// 从Set节点获取总时间戳\nconst totalStartTs = $node[\"微信AccessToken\"].json[\"start_ts\"];\nconst totalEndTs = $node[\"微信AccessToken\"].json[\"end_ts\"];\nconst accesstoken = $input.first().json.body.access_token\n// 7天对应的秒数：7*24*60*60 = 604800\nconst sevenDaysInSeconds = 60 * 60 * 24;\n\n// 存储拆分后的所有区间\nconst timeRanges = [];\n\n// 循环拆分时间区间\nlet currentStartTs = totalStartTs;\nwhile (currentStartTs < totalEndTs) {\n    // 计算当前区间的结束时间（最多7天，不超过总结束时间）\n    let currentEndTs = currentStartTs + sevenDaysInSeconds - 1; // 减1避免重复（比如0点到下一个0点前1秒）\n    if (currentEndTs > totalEndTs) {\n        currentEndTs = totalEndTs;\n    }\n\n    // 转换为可读时间（可选，方便调试）\n    const formatDate = (ts) => new Date(ts * 1000).toLocaleString('zh-CN');\n    \n    // 添加当前区间到数组\n    timeRanges.push({\n        start_timestamp: currentStartTs,\n        end_timestamp: currentEndTs,\n        start_time: formatDate(currentStartTs),\n        end_time: formatDate(currentEndTs),\n        accesstoken\n    });\n\n    // 移动到下一个区间（开始时间=当前结束时间+1）\n    currentStartTs = currentEndTs + 1;\n}\n\n// 返回所有拆分后的区间（供后续节点调用）\nreturn timeRanges\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '时间段拆分-天' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        464
+      ],
+      "id": "d31e0b4a-e825-4d23-ac64-6ea2b7942db8",
+      "name": "时间段拆分-天"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.weixin.qq.com/channels/ec/aftersale/getaftersaleorder",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "after_sale_order_id",
+              "value": "={{ $json.aftersale_order_id }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2576,
+        464
+      ],
+      "id": "9dd4eaf4-7c8e-4168-ae99-23a3892ec8ab",
+      "name": "获取售后详情",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  // 1. 安全获取 AccessToken\n  const tokenNode = $('微信AccessToken').first();\n  const accessToken = tokenNode ? (tokenNode.json.body.access_token || tokenNode.json.access_token) : null;\n\n  // 2. 提取数据\n  const allOrderIds = $input.all().flatMap(item => item.json.after_sale_order_id_list || []);\n  const uniqueIds = [...new Set(allOrderIds)];\n\n  // 3. 【核心修改】构建返回\n  if (uniqueIds.length > 0) {\n    // 情况A: 有数据，正常返回\n    return uniqueIds.map(orderId => ({\n      json: {\n        aftersale_order_id: orderId,\n        access_token: accessToken,\n        is_empty: false // 标记：非空\n      }\n    }));\n  } else {\n    // 情况B: 没数据，返回一个“伪造包”保活\n    // 这样流程就不会断，能继续往下走\n    return [{\n      json: {\n        is_empty: true // 标记：这是空的\n      }\n    }];\n  }\n\n} catch (error) {\n  // 出错也返回一个伪造包，防止整个任务挂掉\n  return [{ json: { is_empty: true, error: error.message } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        480
+      ],
+      "id": "57dd6003-b23b-44f8-9902-f86eb872edc6",
+      "name": "提取售后单号",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：订单详情清洗 ==========\n// 上游：HTTP 订单详情（单条响应）。模式：Run Once for Each Item。\n// 输入：items[0].json = 微信订单详情 API 整包（含 errcode, order）\n// 输出： [{json: full_data}]，full_data 为扁平行，键名对应 ods_微信_订单_全量 列名\n\nfunction formatTs(ts) {\n  if (ts && (typeof ts === 'number' || typeof ts === 'string')) {\n    const tsNum = typeof ts === 'string' ? parseInt(ts) : ts;\n    if (tsNum > 0) {\n      const date = new Date(tsNum * 1000);\n      const year = date.getFullYear();\n      const month = String(date.getMonth() + 1).padStart(2, '0');\n      const day = String(date.getDate()).padStart(2, '0');\n      const hours = String(date.getHours()).padStart(2, '0');\n      const minutes = String(date.getMinutes()).padStart(2, '0');\n      const seconds = String(date.getSeconds()).padStart(2, '0');\n      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;\n    }\n  }\n  return '';\n}\n\nfunction formatPrice(cents) {\n  if (cents && (typeof cents === 'number' || typeof cents === 'string')) {\n    const num = typeof cents === 'string' ? parseFloat(cents) : cents;\n    return Math.round(num / 100 * 100) / 100;\n  }\n  return 0.0;\n}\n\nfunction getEnumDesc(enumMap, value, defaultVal = '') {\n  if (value === null || value === undefined) return defaultVal;\n  return enumMap[value] !== undefined ? enumMap[value] : `${defaultVal}(${value})`;\n}\n\nfunction safeGetFirst(lst) {\n  return Array.isArray(lst) && lst.length > 0 ? lst[0] : {};\n}\n\n// ---------- 枚举映射（与 order_weixin.py 一致）----------\nconst STATUS_DESC_MAP = {10: \"待付款\", 12: \"礼物待收下\", 13: \"凑单买凑团中\", 20: \"待发货\", 21: \"部分发货\", 30: \"待收货\", 100: \"完成\", 200: \"全部商品售后之后，订单取消\", 250: \"未付款用户主动取消或超时未付款订单自动取消\"};\nconst PRESENT_SEND_TYPE_MAP = {0: \"普通单聊\", 1: \"普通群聊\", 2: \"公众号/服务号送礼\", 3: \"视频号送礼\", 4: \"企微单聊\", 5: \"企微群聊\", 6: \"小程序/小游戏送礼\"};\nconst PAYMENT_METHOD_MAP = {1: \"微信支付\", 2: \"先用后付\", 3: \"抽奖商品0元订单\", 4: \"会员积分兑换订单\"};\nconst DELIVER_METHOD_MAP = {0: \"普通物流\", 1: \"虚拟发货\", 3: \"虚拟发货\"};\nconst DELIVER_TYPE_MAP = {1: \"自寄快递\", 2: \"在线签约快递单（已废弃）\", 3: \"虚拟商品无需物流发货\", 4: \"在线快递散单（已废弃）\"};\nconst ORDER_SCENE_MAP = {1: \"其他\", 2: \"直播间\", 3: \"短视频\", 4: \"商品分享\", 5: \"商品橱窗主页\", 6: \"公众号文章商品卡片\"};\nconst SHARE_SCENE_MAP = {1: \"直播间\", 2: \"橱窗\", 3: \"短视频\", 4: \"视频号主页\", 5: \"商品详情页\", 6: \"带商品的公众号文章\", 7: \"商品链接\", 8: \"商品二维码\", 9: \"商品短链\", 10: \"分享直播间\", 11: \"分享直播间\", 12: \"视频号橱窗的短链\", 13: \"视频号橱窗的二维码\"};\nconst CUSTOM_TYPE_MAP = {1: \"文字定制\", 2: \"图片定制\", 3: \"小程序定制\"};\nconst PREDICT_ARRIVE_TIME_TYPE_MAP = {0: \"立即配送\", 1: \"预约配送\"};\nconst COUPON_TYPE_MAP = {1: \"商家优惠\", 2: \"达人优惠\", 3: \"平台优惠\", 4: \"国家补贴\", 5: \"地方补贴\", 6: \"活动商家补贴\"};\nconst QUALITY_INSPECT_STATUS_JEWELRY = {0: \"待录入送检信息\", 1: \"待送检\", 2: \"未入库已取消\", 3: \"入库异常\", 4: \"已入库\", 5: \"质检中\", 6: \"待出库\", 7: \"出库异常\", 8: \"待自提\", 10: \"已取消已自提\", 11: \"已发货\", 12: \"待重新送检\", 13: \"已达送检上限\", 14: \"待驿站入库\"};\nconst QUALITY_INSPECT_STATUS_FRESH = {100: \"待上传打包信息\", 200: \"质检中\", 201: \"质检不通过\", 202: \"质检通过\"};\nconst SALE_CHANNEL_MAP = {0: \"关联账号\", 1: \"合作账号\", 100: \"联盟达人带货\", 101: \"联盟带货机构推广\"};\nconst ACCOUNT_TYPE_MAP = {1: \"视频号\", 2: \"公众号\", 3: \"小程序\"};\nconst COMMISSION_TYPE_MAP = {0: \"达人【对应的可能为 finder_id，或者为 talent_id】\", 1: \"带货机构\"};\nconst COMMISSION_STATUS_MAP = {1: \"未结算\", 2: \"已结算\"};\nconst SHARER_TYPE_MAP = {0: \"普通分享员\", 1: \"店铺分享员\"};\nconst DELIVERY_TIME_TYPE_MAP = {1: \"正常发货\", 2: \"发货协商\", 3: \"发货报备\"};\nconst CHANGE_SKU_STATE_MAP = {3: \"等待商家处理\", 4: \"商家审核通过\", 5: \"商家拒绝\", 6: \"用户主动取消\", 7: \"超时默认拒绝\"};\nconst QUALITY_INSPECT_TYPE_MAP = {0: \"不需要\", 2: \"生鲜类质检\", 1: \"珠宝玉石类质检\"};\nconst DROPSHIP_FLAG_MAP = {0: \"不可代发\", 1: \"未分配代发\", 2: \"部分分配\", 3: \"已分配\"};\n\nfunction buildOrderRow(result) {\n  if (result.errcode && result.errcode !== 0) return null;\n  const order = result.order || {};\n  const orderDetail = order.order_detail || {};\n  const aftersaleDetail = order.aftersale_detail || {};\n  const orderPresentInfo = order.order_present_info || {};\n  const intraCityOrderInfo = order.intra_city_order_info || {};\n  const productInfos = orderDetail.product_infos || [];\n  const payInfo = orderDetail.pay_info || {};\n  const priceInfo = orderDetail.price_info || {};\n  const deliveryInfo = orderDetail.delivery_info || {};\n  const extInfo = orderDetail.ext_info || {};\n  const couponInfo = orderDetail.coupon_info || {};\n  const commissionInfos = orderDetail.commission_infos || [];\n  const sharerInfo = orderDetail.sharer_info || {};\n  const settleInfo = orderDetail.settle_info || {};\n  const skuSharerInfos = orderDetail.sku_sharer_infos || [];\n  const agentInfo = orderDetail.agent_info || {};\n  const sourceInfos = orderDetail.source_infos || [];\n  const refundInfo = orderDetail.refund_info || {};\n  const greetingCardInfo = orderDetail.greeting_card_info || {};\n  const customInfo = orderDetail.custom_info || {};\n  const addressInfo = deliveryInfo.address_info || {};\n  const deliveryProductInfo = deliveryInfo.delivery_product_info || [];\n  const addressUnderReview = deliveryInfo.address_under_review || {};\n  const rechargeInfo = deliveryInfo.recharge_info || {};\n  const qualityInspectInfo = deliveryInfo.quality_inspect_info || {};\n  const telNumberExtInfo = addressInfo.tel_number_ext_info || {};\n  const reviewTelExtInfo = addressUnderReview.tel_number_ext_info || {};\n  const firstProduct = safeGetFirst(productInfos);\n  const productSkuAttrs = firstProduct.sku_attrs || [];\n  const firstSkuAttr = safeGetFirst(productSkuAttrs);\n  const productCoupons = firstProduct.order_product_coupon_info_list || [];\n  const firstProductCoupon = safeGetFirst(productCoupons);\n  const giftInfo = firstProduct.free_gift_info || {};\n  const giftList = giftInfo.main_product_list || [];\n  const firstProductGift = safeGetFirst(giftList);\n  const firstProductSkuDeliver = firstProduct.sku_deliver_info || {};\n  const firstProductExtraService = firstProduct.extra_service || {};\n  const firstProductChangeSku = firstProduct.change_sku_info || {};\n  const firstProductDropship = firstProduct.dropship_info || {};\n  const firstLogistics = safeGetFirst(deliveryProductInfo);\n  const logisticsProducts = firstLogistics.product_infos || [];\n  const firstLogisticsProduct = safeGetFirst(logisticsProducts);\n  const firstCommission = safeGetFirst(commissionInfos);\n  const firstSource = safeGetFirst(sourceInfos);\n  const firstSkuSharer = safeGetFirst(skuSharerInfos);\n  const aftersaleList = aftersaleDetail.aftersale_order_list || [];\n  const firstAftersale = safeGetFirst(aftersaleList);\n\n  const fullData = {\n    \"订单ID\": String(order.order_id || ''),\n    \"创建时间\": formatTs(order.create_time),\n    \"更新时间\": formatTs(order.update_time),\n    \"订单状态\": String(order.status || ''),\n    \"订单状态描述\": getEnumDesc(STATUS_DESC_MAP, order.status, \"未知状态\"),\n    \"平台\": \"微信\",\n    \"店铺ID\": \"wx83c35490331b1fcc\",\n    \"订单归属人OpenID\": String(order.openid || ''),\n    \"订单归属人UnionID\": String(order.unionid || ''),\n    \"是否礼物订单\": String(order.is_present || false),\n    \"礼物订单留言\": String(order.present_note || ''),\n    \"礼物订单赠送者OpenID\": String(order.present_giver_openid || ''),\n    \"礼物订单赠送者UnionID\": String(order.present_giver_unionid || ''),\n    \"礼物订单ID\": String(order.present_order_id_str || ''),\n    \"礼物单类型\": String(order.present_send_type || ''),\n    \"礼物单类型描述\": getEnumDesc(PRESENT_SEND_TYPE_MAP, order.present_send_type),\n    \"是否闪购订单\": String(order.is_flash_sale_order || false),\n    \"礼物订单留言_详细\": String(orderPresentInfo.present_note || ''),\n    \"礼物赠送者OpenID_详细\": String(orderPresentInfo.present_giver_openid || ''),\n    \"礼物赠送者UnionID_详细\": String(orderPresentInfo.present_giver_unionid || ''),\n    \"礼物订单ID_详细\": String(orderPresentInfo.present_order_id_str || ''),\n    \"礼物单类型_详细\": String(orderPresentInfo.present_send_type || ''),\n    \"礼物单是否付款\": String(orderPresentInfo.is_b2c_free_present || ''),\n    \"礼物单付款状态描述\": getEnumDesc({0: \"已付款\", 1: \"无需付款\"}, orderPresentInfo.is_b2c_free_present),\n    \"门店ID\": String(intraCityOrderInfo.shop_id || ''),\n    \"预计送达开始时间\": formatTs(intraCityOrderInfo.predict_arrive_start_time),\n    \"预计送达结束时间\": formatTs(intraCityOrderInfo.predict_arrive_end_time),\n    \"配送类型\": String(intraCityOrderInfo.predict_arrive_time_type || ''),\n    \"配送类型描述\": getEnumDesc(PREDICT_ARRIVE_TIME_TYPE_MAP, intraCityOrderInfo.predict_arrive_time_type),\n    \"支付方式\": String(payInfo.payment_method || ''),\n    \"支付方式描述\": getEnumDesc(PAYMENT_METHOD_MAP, payInfo.payment_method),\n    \"支付时间\": formatTs(payInfo.pay_time),\n    \"支付订单号\": String(payInfo.transaction_id || ''),\n    \"商品总价(元)\": String(formatPrice(priceInfo.product_price || 0)),\n    \"用户实付金额(元)\": String(formatPrice(priceInfo.order_price || 0)),\n    \"运费(元)\": String(formatPrice(priceInfo.freight || 0)),\n    \"商家优惠金额(元)\": String(formatPrice(priceInfo.discounted_price || 0)),\n    \"是否有商家优惠券优惠\": String(priceInfo.is_discounted || false),\n    \"订单原始价格(元)\": String(formatPrice(priceInfo.original_order_price || 0)),\n    \"商品预估价格(元)\": String(formatPrice(priceInfo.estimate_product_price || 0)),\n    \"改价后降低金额(元)\": String(formatPrice(priceInfo.change_down_price || 0)),\n    \"改价后运费(元)\": String(formatPrice(priceInfo.change_freight || 0)),\n    \"是否修改运费\": String(priceInfo.is_change_freight || false),\n    \"是否使用会员积分抵扣\": String(priceInfo.use_deduction || false),\n    \"会员积分抵扣金额(元)\": String(formatPrice(priceInfo.deduction_price || 0)),\n    \"商家实收金额(元)\": String(formatPrice(priceInfo.merchant_receieve_price || 0)),\n    \"达人优惠金额(元)\": String(formatPrice(priceInfo.finder_discounted_price || 0)),\n    \"会员权益优惠金额(元)\": String(formatPrice(priceInfo.vip_discounted_price || 0)),\n    \"一起买优惠金额(元)\": String(formatPrice(priceInfo.bulkbuy_discounted_price || 0)),\n    \"国补优惠金额(元)\": String(formatPrice(priceInfo.national_subsidy_discounted_price || 0)),\n    \"平台券优惠金额(元)\": String(formatPrice(priceInfo.cash_coupon_discounted_price || 0)),\n    \"地方补贴优惠(元)\": String(formatPrice(priceInfo.national_subsidy_merchant_discounted_price || 0)),\n    \"活动商家补贴(元)\": String(formatPrice(priceInfo.platform_activity_merchant_discounted_price || 0)),\n    \"订单发货方式\": String(deliveryInfo.deliver_method || ''),\n    \"订单发货方式描述\": getEnumDesc(DELIVER_METHOD_MAP, deliveryInfo.deliver_method),\n    \"发货完成时间\": formatTs(deliveryInfo.ship_done_time),\n    \"修改地址申请时间\": formatTs(deliveryInfo.address_apply_time),\n    \"电子面单跨店铺取号密钥\": String(deliveryInfo.ewaybill_order_code || ''),\n    \"订单质检类型\": String(deliveryInfo.quality_inspect_type || ''),\n    \"订单质检类型描述\": getEnumDesc(QUALITY_INSPECT_TYPE_MAP, deliveryInfo.quality_inspect_type),\n    \"预计发货时间\": formatTs(deliveryInfo.predict_delivery_time),\n    \"发货时效类型\": String(deliveryInfo.delivery_time_type || ''),\n    \"发货时效类型描述\": getEnumDesc(DELIVERY_TIME_TYPE_MAP, deliveryInfo.delivery_time_type),\n    \"供货商代发标记\": String(deliveryInfo.dropship_flag || ''),\n    \"供货商代发状态\": getEnumDesc(DROPSHIP_FLAG_MAP, deliveryInfo.dropship_flag),\n    \"收货人姓名\": String(addressInfo.user_name || ''),\n    \"邮编\": String(addressInfo.postal_code || ''),\n    \"省份\": String(addressInfo.province_name || ''),\n    \"城市\": String(addressInfo.city_name || ''),\n    \"区/县\": String(addressInfo.county_name || ''),\n    \"详细地址\": String(addressInfo.detail_info || ''),\n    \"联系方式\": String(addressInfo.tel_number || ''),\n    \"门牌号码\": String(addressInfo.house_number || ''),\n    \"虚拟发货联系方式\": String(addressInfo.virtual_order_tel_number || ''),\n    \"是否使用虚拟号码\": String(addressInfo.use_tel_number || 0),\n    \"用户地址唯一标识\": String(addressInfo.hash_code || ''),\n    \"脱敏手机号\": String(telNumberExtInfo.real_tel_number || ''),\n    \"完整虚拟号码\": String(telNumberExtInfo.virtual_tel_number || ''),\n    \"主动兑换虚拟号码次数\": String(telNumberExtInfo.get_virtual_tel_cnt || 0),\n    \"虚拟号码过期时间\": formatTs(telNumberExtInfo.virtual_tel_expire_time),\n    \"修改后收货人姓名\": String(addressUnderReview.user_name || ''),\n    \"修改后邮编\": String(addressUnderReview.postal_code || ''),\n    \"修改后省份\": String(addressUnderReview.province_name || ''),\n    \"修改后城市\": String(addressUnderReview.city_name || ''),\n    \"修改后区县\": String(addressUnderReview.county_name || ''),\n    \"修改后详细地址\": String(addressUnderReview.detail_info || ''),\n    \"修改后联系方式\": String(addressUnderReview.tel_number || ''),\n    \"修改后门牌号码\": String(addressUnderReview.house_number || ''),\n    \"修改后虚拟联系方式\": String(addressUnderReview.virtual_order_tel_number || ''),\n    \"修改后是否用虚拟号\": String(addressUnderReview.use_tel_number || 0),\n    \"修改后地址唯一标识\": String(addressUnderReview.hash_code || ''),\n    \"修改后脱敏手机号\": String(reviewTelExtInfo.real_tel_number || ''),\n    \"修改后虚拟号码\": String(reviewTelExtInfo.virtual_tel_number || ''),\n    \"充值账号\": String(rechargeInfo.account_no || ''),\n    \"账号充值类型\": String(rechargeInfo.account_type || ''),\n    \"微信OpenID\": String(rechargeInfo.wx_openid || ''),\n    \"质检状态\": String(qualityInspectInfo.inspect_status || ''),\n    \"质检状态描述\": getEnumDesc({...QUALITY_INSPECT_STATUS_JEWELRY, ...QUALITY_INSPECT_STATUS_FRESH}, qualityInspectInfo.inspect_status, \"未知质检状态\"),\n    \"用户备注\": String(extInfo.customer_notes || ''),\n    \"商家备注\": String(extInfo.merchant_notes || ''),\n    \"确认收货时间\": formatTs(extInfo.confirm_receipt_time),\n    \"视频号ID\": String(extInfo.finder_id || ''),\n    \"直播ID\": String(extInfo.live_id || ''),\n    \"下单场景\": String(extInfo.order_scene || ''),\n    \"下单场景描述\": getEnumDesc(ORDER_SCENE_MAP, extInfo.order_scene),\n    \"会员权益SessionID\": String(extInfo.vip_order_session_id || ''),\n    \"分佣单生成状态\": String(extInfo.commission_handling_progress || ''),\n    \"分佣单状态描述\": getEnumDesc({0: \"未生成\", 1: \"已生成\"}, extInfo.commission_handling_progress),\n    \"用户优惠券ID\": String(couponInfo.user_coupon_id || ''),\n    \"分享员OpenID\": String(sharerInfo.sharer_openid || ''),\n    \"分享员UnionID\": String(sharerInfo.sharer_unionid || ''),\n    \"分享员类型\": String(sharerInfo.sharer_type || ''),\n    \"分享员类型描述\": getEnumDesc(SHARER_TYPE_MAP, sharerInfo.sharer_type),\n    \"分享场景\": String(sharerInfo.share_scene || ''),\n    \"分享场景描述\": getEnumDesc(SHARE_SCENE_MAP, sharerInfo.share_scene),\n    \"分享员数据解析状态\": String(sharerInfo.handling_progress || ''),\n    \"解析状态描述\": getEnumDesc({1: \"解析完成\", 0: \"解析中\"}, sharerInfo.handling_progress),\n    \"预计技术服务费(元)\": String(formatPrice(settleInfo.predict_commission_fee || 0)),\n    \"技术服务费(元)\": String(formatPrice(settleInfo.commission_fee || 0)),\n    \"预计人气卡返佣(元)\": String(formatPrice(settleInfo.predict_wecoin_commission || 0)),\n    \"人气卡返佣金额(元)\": String(formatPrice(settleInfo.wecoin_commission || 0)),\n    \"商家结算时间\": formatTs(settleInfo.settle_time),\n    \"授权视频号ID\": String(agentInfo.agent_finder_id || ''),\n    \"授权视频号昵称\": String(agentInfo.agent_finder_nickname || ''),\n    \"退还运费金额(元)\": String(formatPrice(refundInfo.refund_freight || 0)),\n    \"贺卡落款\": String(greetingCardInfo.giver_name || ''),\n    \"贺卡称谓\": String(greetingCardInfo.receiver_name || ''),\n    \"贺卡内容\": String(greetingCardInfo.greeting_message || ''),\n    \"定制图片URL\": String(customInfo.custom_img_url || ''),\n    \"定制文字\": String(customInfo.custom_word || ''),\n    \"定制类型\": String(customInfo.custom_type || ''),\n    \"定制类型描述\": getEnumDesc(CUSTOM_TYPE_MAP, customInfo.custom_type),\n    \"定制预览图片URL\": String(customInfo.custom_preview_img_url || ''),\n    \"正在售后流程的售后单数\": String(aftersaleDetail.on_aftersale_order_cnt || 0),\n    \"售后订单ID\": String(firstAftersale.aftersale_order_id || ''),\n    \"售后订单状态\": String(firstAftersale.status || ''),\n    \"商品ID\": String(firstProduct.product_id || ''),\n    \"SKU_ID\": String(firstProduct.sku_id || ''),\n    \"SKU小图URL\": String(firstProduct.thumb_img || ''),\n    \"售卖单价(元)\": String(formatPrice(firstProduct.sale_price || 0)),\n    \"SKU数量\": String(firstProduct.sku_cnt || 0),\n    \"商品标题\": String(firstProduct.title || ''),\n    \"正在售后SKU数量\": String(firstProduct.on_aftersale_sku_cnt || 0),\n    \"完成售后SKU数量\": String(firstProduct.finish_aftersale_sku_cnt || 0),\n    \"商品编码\": String(firstProduct.sku_code || ''),\n    \"市场单价(元)\": String(formatPrice(firstProduct.market_price || 0)),\n    \"SKU属性键\": String(firstSkuAttr.attr_key || ''),\n    \"SKU属性值\": String(firstSkuAttr.attr_value || ''),\n    \"SKU实付总价(元)\": String(formatPrice(firstProduct.real_price || 0)),\n    \"商品外部SPUID\": String(firstProduct.out_product_id || ''),\n    \"商品外部SKUID\": String(firstProduct.out_sku_id || ''),\n    \"是否有商家优惠\": String(firstProduct.is_discounted || false),\n    \"使用优惠后SKU总价(元)\": String(formatPrice(firstProduct.estimate_price || 0)),\n    \"是否修改过价格\": String(firstProduct.is_change_price || false),\n    \"改价后SKU总价(元)\": String(formatPrice(firstProduct.change_price || 0)),\n    \"区域库存ID\": String(firstProduct.out_warehouse_id || ''),\n    \"是否使用会员积分抵扣\": String(firstProduct.use_deduction || false),\n    \"会员积分抵扣金额(元)\": String(formatPrice(firstProduct.deduction_price || 0)),\n    \"商品发货时效(秒)\": String(firstProduct.delivery_deadline || 0),\n    \"商家优惠金额(元)\": String(formatPrice(firstProduct.merchant_discounted_price || 0)),\n    \"达人优惠金额(元)\": String(formatPrice(firstProduct.finder_discounted_price || 0)),\n    \"是否赠品\": String(firstProduct.is_free_gift || 0),\n    \"会员权益优惠金额(元)\": String(formatPrice(firstProduct.vip_discounted_price || 0)),\n    \"商品常量编号\": String(firstProduct.product_unique_id || ''),\n    \"一起买优惠金额(元)\": String(formatPrice(firstProduct.bulkbuy_discounted_price || 0)),\n    \"国补优惠金额(元)\": String(formatPrice(firstProduct.national_subsidy_discounted_price || 0)),\n    \"是否闪购商品\": String(firstProduct.is_flash_sale || false),\n    \"地方补贴优惠金额(元)\": String(formatPrice(firstProduct.national_subsidy_merchant_discounted_price || 0)),\n    \"活动商家补贴(元)\": String(formatPrice(firstProduct.platform_activity_merchant_discounted_price || 0)),\n    \"平台券优惠金额(元)\": String(formatPrice(firstProduct.cash_coupon_discounted_price || 0)),\n    \"代发单号\": String(firstProductDropship.ds_order_id || ''),\n    \"改价状态\": getEnumDesc(CHANGE_SKU_STATE_MAP, firstProductChangeSku.preshipment_change_sku_state),\n    \"原SKU_ID\": String(firstProductChangeSku.old_sku_id || ''),\n    \"新SKU_ID\": String(firstProductChangeSku.new_sku_id || ''),\n    \"商家处理截止时间\": formatTs(firstProductChangeSku.ddl_time_stamp),\n    \"7天无理由\": getEnumDesc({0: \"不支持\", 1: \"支持\"}, firstProductExtraService.seven_day_return),\n    \"商家运费险\": getEnumDesc({0: \"不支持\", 1: \"支持\"}, firstProductExtraService.freight_insurance),\n    \"商品发货类型\": getEnumDesc({0: \"现货\", 1: \"全款预售\"}, firstProductSkuDeliver.stock_type),\n    \"预计发货时间\": formatTs(firstProductSkuDeliver.predict_delivery_time),\n    \"预售类型\": getEnumDesc({0: \"付款后n天发货\", 1: \"预售结束后n天发货\"}, firstProductSkuDeliver.full_payment_presale_delivery_type),\n    \"商品优惠券ID\": String(firstProductCoupon.user_coupon_id || ''),\n    \"优惠券类型\": getEnumDesc(COUPON_TYPE_MAP, firstProductCoupon.coupon_type),\n    \"优惠金额(元)\": String(formatPrice(firstProductCoupon.discounted_price || 0)),\n    \"优惠券ID\": String(firstProductCoupon.coupon_id || ''),\n    \"赠品数量\": String(firstProductGift.gift_cnt || 0),\n    \"活动ID\": String(firstProductGift.task_id || ''),\n    \"赠品商品ID\": String(firstProductGift.product_id || ''),\n    \"主品SKU_ID\": String(firstProductGift.sku_id || ''),\n    \"快递单号\": String(firstLogistics.waybill_id || ''),\n    \"快递公司编码\": String(firstLogistics.delivery_id || ''),\n    \"快递公司名称\": String(firstLogistics.delivery_name || ''),\n    \"发货时间\": formatTs(firstLogistics.delivery_time),\n    \"配送方式\": getEnumDesc(DELIVER_TYPE_MAP, firstLogistics.deliver_type),\n    \"物流商品ID\": String(firstLogisticsProduct.product_id || ''),\n    \"物流SKU_ID\": String(firstLogisticsProduct.sku_id || ''),\n    \"物流商品数量\": String(firstLogisticsProduct.product_cnt || 0),\n    \"分账方昵称\": String(firstCommission.nickname || ''),\n    \"分账方类型\": getEnumDesc(COMMISSION_TYPE_MAP, firstCommission.type),\n    \"分账状态\": getEnumDesc(COMMISSION_STATUS_MAP, firstCommission.status),\n    \"分账金额(元)\": String(formatPrice(firstCommission.amount || 0)),\n    \"达人视频号ID\": String(firstCommission.finder_id || ''),\n    \"达人openfinderid\": String(firstCommission.openfinderid || ''),\n    \"新带货达人ID\": String(firstCommission.talent_id || ''),\n    \"带货机构ID\": String(firstCommission.agency_id || ''),\n    \"带货账户类型\": getEnumDesc(ACCOUNT_TYPE_MAP, firstSource.account_type),\n    \"带货账户ID\": String(firstSource.account_id || ''),\n    \"销售渠道\": getEnumDesc(SALE_CHANNEL_MAP, firstSource.sale_channel),\n    \"带货账户昵称\": String(firstSource.account_nickname || ''),\n    \"带货内容类型\": String(firstSource.content_type || ''),\n    \"带货内容ID\": String(firstSource.content_id || ''),\n    \"分享员类型\": getEnumDesc(SHARER_TYPE_MAP, firstSkuSharer.sharer_type),\n    \"分享场景\": getEnumDesc(SHARE_SCENE_MAP, firstSkuSharer.share_scene),\n    \"是否来自企微分享\": String(firstSkuSharer.from_wecom || false)\n  };\n  return fullData;\n}\n\n// ---------- n8n 入口 ----------\n// 模式：Run Once for Each Item。items 来自上一节点（HTTP 订单详情），每条一个订单响应。\nconst out = [];\nfor (const item of items) {\n  const row = buildOrderRow(item.json || {});\n  if (row !== null) {\n    out.push({json: row});\n  }\n}\nreturn out;\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '提取订单详情' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2816,
+        144
+      ],
+      "id": "75fe26e5-3d71-4157-a488-18fdd3adf0ce",
+      "name": "提取订单详情"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.weixin.qq.com/channels/ec/aftersale/getaftersalelist",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.accesstoken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"begin_create_time\": {{ $json.start_timestamp }},\n    \"end_create_time\": {{ $json.end_timestamp }}\n} ",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "next_key",
+                    "value": "={{ $response.body.next_key }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.has_more == false }}"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1616,
+        480
+      ],
+      "id": "5c1e8cda-d59e-4f41-a8fb-1658642eee45",
+      "name": "获取售后单号",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.weixin.qq.com/channels/ec/funds/listorderflow",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.body.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"order_settle_state\": 0,\n  \"order_state\": 0,\n  \"order_pay_method\": 0,\n  \"pagination_info\": {\n    \"limit\": 100,\n    \"use_page_ctx\": true\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "type": "body",
+                    "name": "pagination_info",
+                    "value": "={{\n{\n  \"limit\": 100,\n  \"use_page_ctx\": true,\n  \"page_ctx\": $response?.body?.page_ctx || \"\"\n}\n}}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.page_ctx }}"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1616,
+        736
+      ],
+      "id": "39eaaa32-5c1f-4b48-aae4-90d41ead38c1",
+      "name": "获取结算数据",
+      "retryOnFail": true,
+      "maxTries": 5
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：订单流水/结算清洗 ==========\n// 上游：Code 分页拉满流水（每条 item.json 为一条 flow）。模式：Run Once for All Items。\n// 输出： [{json: flow_record}, ...]，键名对应 ods_微信_结算_全量 列名\n\nfunction formatTs(ts) {\n  if (ts && (typeof ts === 'number' || typeof ts === 'string')) {\n    const tsNum = typeof ts === 'string' ? parseInt(ts) : ts;\n    if (tsNum > 0) {\n      const date = new Date(tsNum * 1000);\n      const year = date.getFullYear();\n      const month = String(date.getMonth() + 1).padStart(2, '0');\n      const day = String(date.getDate()).padStart(2, '0');\n      const hours = String(date.getHours()).padStart(2, '0');\n      const minutes = String(date.getMinutes()).padStart(2, '0');\n      const seconds = String(date.getSeconds()).padStart(2, '0');\n      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;\n    }\n  }\n  return '';\n}\n\nfunction formatPrice(cents) {\n  if (cents && (typeof cents === 'number' || typeof cents === 'string')) {\n    const num = typeof cents === 'string' ? parseFloat(cents) : cents;\n    return Math.round(num / 100 * 100) / 100;\n  }\n  return 0.0;\n}\n\nfunction getEnumDesc(enumMap, value, defaultVal = '') {\n  if (value === null || value === undefined) return defaultVal;\n  return enumMap[value] !== undefined ? enumMap[value] : `${defaultVal}(${value})`;\n}\n\nfunction safeGet(data, keys, defaultVal = '') {\n  let current = data;\n  for (const key of keys) {\n    if (current && typeof current === 'object' && key in current) {\n      current = current[key];\n    } else {\n      return defaultVal;\n    }\n  }\n  return current;\n}\n\nconst ORDER_SETTLE_STATE_MAP = {0: \"无，查询全部\", 1: \"待结算\", 2: \"无需结算\", 60: \"结算完成\", 100: \"部分结算\"};\nconst ORDER_STATE_MAP = {0: \"全部\", 20: \"待发货\", 30: \"待收货\", 100: \"订单完成\"};\nconst ORDER_PAY_METHOD_MAP = {0: \"全部\", 1: \"普通支付\", 2: \"先用后付\"};\nconst SETTLE_STATE_MAP = {0: \"未结算\", 1: \"待结算\", 2: \"无需结算\", 60: \"结算完成\", 100: \"部分结算\"};\n\nfunction buildFlowRow(flow) {\n  const productList = flow.product_list || [];\n  const postSettle = flow.post_settlement_expense || {};\n  const flowRecord = {\n    \"订单ID\": String(flow.order_id || ''),\n    \"订单状态\": String(flow.order_state || ''),\n    \"订单状态描述\": getEnumDesc(ORDER_STATE_MAP, flow.order_state),\n    \"结算状态\": String(flow.order_settle_state || ''),\n    \"结算状态描述\": getEnumDesc(ORDER_SETTLE_STATE_MAP, flow.order_settle_state),\n    \"订单创建时间\": formatTs(flow.order_create_time),\n    \"订单支付时间\": formatTs(flow.order_paid_time),\n    \"支付方式\": String(flow.order_pay_method || ''),\n    \"支付方式描述\": getEnumDesc(ORDER_PAY_METHOD_MAP, flow.order_pay_method),\n    \"订单类型\": String(flow.order_type || ''),\n    \"同城配送门店ID\": String(flow.intra_city_shop_id || ''),\n    \"商户实收金额(分)\": String(flow.mch_received_amount || 0),\n    \"支出金额(分)\": String(flow.expense_amount || 0),\n    \"预计结算金额(分)\": String(flow.mch_settle_amount || 0),\n    \"商品总金额(分)\": String(flow.product_total_amount || 0),\n    \"运费金额(分)\": String(flow.freight_amount || 0),\n    \"改价金额(分)\": String(flow.change_down_price || 0),\n    \"商户优惠金额(分)\": String(flow.mch_discount_amount || 0),\n    \"积分抵扣金额(分)\": String(flow.score_discount_amount || 0),\n    \"用户实付金额(分)\": String(flow.buyer_paid_amount || 0),\n    \"达人优惠金额(分)\": String(flow.promoter_discount_amount || 0),\n    \"平台优惠金额(分)\": String(flow.platform_discount_amount || 0),\n    \"国家补贴金额(分)\": String(flow.national_subsidy_discount_amount || 0),\n    \"补交运费(分)\": String(flow.freight_make_up_amount || 0),\n    \"跨店优惠金额(分)\": String(flow.cross_shop_discount_amount || 0),\n    \"用户退款金额(分)\": String(flow.buyer_refund_amount || 0),\n    \"平台优惠退款金额(分)\": String(flow.platform_discount_refund_amount || 0),\n    \"达人优惠退款金额(分)\": String(flow.promoter_discount_refund_amount || 0),\n    \"原技术服务费(分)\": String(flow.original_platform_commission_amount || 0),\n    \"预计技术服务费(分)\": String(flow.platform_commission_amount || 0),\n    \"运费险补贴减免技术服务费(分)\": String(flow.freight_insurance_subsidy_amount || 0),\n    \"预计机构服务费(分)\": String(flow.supplier_commission_amount || 0),\n    \"预计达人服务费(分)\": String(flow.promoter_commission_amount || 0),\n    \"预计运费险金额(分)\": String(flow.freight_insurance_amount || 0),\n    \"运费险补缴他单金额(分)\": String(flow.freight_insurance_make_up_amount || 0),\n    \"预付运费退回金额(分)\": String(flow.pre_freight_refund_amount || 0),\n    \"其他支出(分)\": String(flow.other_expense_amount || 0),\n    \"结算前退款(分)\": String(flow.refund_before_settlement || 0),\n    \"商户实收金额(元)\": String(formatPrice(flow.mch_received_amount || 0)),\n    \"支出金额(元)\": String(formatPrice(flow.expense_amount || 0)),\n    \"预计结算金额(元)\": String(formatPrice(flow.mch_settle_amount || 0)),\n    \"商品总金额(元)\": String(formatPrice(flow.product_total_amount || 0)),\n    \"运费金额(元)\": String(formatPrice(flow.freight_amount || 0)),\n    \"改价金额(元)\": String(formatPrice(flow.change_down_price || 0)),\n    \"商户优惠金额(元)\": String(formatPrice(flow.mch_discount_amount || 0)),\n    \"积分抵扣金额(元)\": String(formatPrice(flow.score_discount_amount || 0)),\n    \"用户实付金额(元)\": String(formatPrice(flow.buyer_paid_amount || 0)),\n    \"达人优惠金额(元)\": String(formatPrice(flow.promoter_discount_amount || 0)),\n    \"平台优惠金额(元)\": String(formatPrice(flow.platform_discount_amount || 0)),\n    \"国家补贴金额(元)\": String(formatPrice(flow.national_subsidy_discount_amount || 0)),\n    \"补交运费(元)\": String(formatPrice(flow.freight_make_up_amount || 0)),\n    \"跨店优惠金额(元)\": String(formatPrice(flow.cross_shop_discount_amount || 0)),\n    \"用户退款金额(元)\": String(formatPrice(flow.buyer_refund_amount || 0)),\n    \"平台优惠退款金额(元)\": String(formatPrice(flow.platform_discount_refund_amount || 0)),\n    \"达人优惠退款金额(元)\": String(formatPrice(flow.promoter_discount_refund_amount || 0)),\n    \"原技术服务费(元)\": String(formatPrice(flow.original_platform_commission_amount || 0)),\n    \"预计技术服务费(元)\": String(formatPrice(flow.platform_commission_amount || 0)),\n    \"运费险补贴减免技术服务费(元)\": String(formatPrice(flow.freight_insurance_subsidy_amount || 0)),\n    \"预计机构服务费(元)\": String(formatPrice(flow.supplier_commission_amount || 0)),\n    \"预计达人服务费(元)\": String(formatPrice(flow.promoter_commission_amount || 0)),\n    \"预计运费险金额(元)\": String(formatPrice(flow.freight_insurance_amount || 0)),\n    \"运费险补缴他单金额(元)\": String(formatPrice(flow.freight_insurance_make_up_amount || 0)),\n    \"预付运费退回金额(元)\": String(formatPrice(flow.pre_freight_refund_amount || 0)),\n    \"其他支出(元)\": String(formatPrice(flow.other_expense_amount || 0)),\n    \"结算前退款(元)\": String(formatPrice(flow.refund_before_settlement || 0)),\n    \"预计商家货款结算时间\": formatTs(flow.mch_settle_time),\n    \"预计技术服务费结算时间\": formatTs(flow.platform_commission_settle_time),\n    \"预计达人服务费结算时间\": formatTs(flow.promoter_commission_settle_time),\n    \"预计机构服务费结算时间\": formatTs(flow.supplier_commission_settle_time),\n    \"预计运费险结算时间\": formatTs(flow.freight_insurance_settle_time),\n    \"预计运费险补缴他单结算时间\": formatTs(flow.freight_insurance_make_up_settle_time),\n    \"机构服务费结算状态\": String(flow.supplier_commission_settle_state || ''),\n    \"机构服务费结算状态描述\": getEnumDesc(SETTLE_STATE_MAP, flow.supplier_commission_settle_state),\n    \"达人服务费结算状态\": String(flow.promoter_commission_settle_state || ''),\n    \"达人服务费结算状态描述\": getEnumDesc(SETTLE_STATE_MAP, flow.promoter_commission_settle_state),\n    \"运费险结算状态\": String(flow.freight_insurance_settle_state || ''),\n    \"运费险结算状态描述\": getEnumDesc(SETTLE_STATE_MAP, flow.freight_insurance_settle_state),\n    \"平台服务费结算状态\": String(flow.platform_commission_settle_state || ''),\n    \"平台服务费结算状态描述\": getEnumDesc(SETTLE_STATE_MAP, flow.platform_commission_settle_state),\n    \"运费险补缴他单结算状态\": String(flow.freight_insurance_make_up_settle_state || ''),\n    \"运费险补缴他单结算状态描述\": getEnumDesc(SETTLE_STATE_MAP, flow.freight_insurance_make_up_settle_state),\n    \"运费险补缴他单订单ID列表\": String((flow.freight_insurance_make_up_order_id_list || []).map(x => String(x)).join(',')),\n    \"结算后买家退款(分)\": String(safeGet(postSettle, [\"buyer_refund_amount\"], 0)),\n    \"结算后平台优惠退款(分)\": String(safeGet(postSettle, [\"platform_discount_refund_amount\"], 0)),\n    \"结算后达人退款(分)\": String(safeGet(postSettle, [\"promoter_refund_amount\"], 0)),\n    \"结算后运费险保费(分)\": String(safeGet(postSettle, [\"freight_insurance_make_up_amount\"], 0)),\n    \"结算后买家退款(元)\": String(formatPrice(safeGet(postSettle, [\"buyer_refund_amount\"], 0))),\n    \"结算后平台优惠退款(元)\": String(formatPrice(safeGet(postSettle, [\"platform_discount_refund_amount\"], 0))),\n    \"结算后达人退款(元)\": String(formatPrice(safeGet(postSettle, [\"promoter_refund_amount\"], 0))),\n    \"结算后运费险保费(元)\": String(formatPrice(safeGet(postSettle, [\"freight_insurance_make_up_amount\"], 0))),\n    \"运费险补缴本单结算状态\": String(safeGet(postSettle, [\"freight_insurance_make_up_settle_state\"], '')),\n    \"运费险补缴本单结算状态描述\": getEnumDesc(SETTLE_STATE_MAP, safeGet(postSettle, [\"freight_insurance_make_up_settle_state\"])),\n    \"运费险补缴本单订单ID\": String(safeGet(postSettle, [\"freight_insurance_make_up_order_id\"], '')),\n    \"商品数量\": String(productList.length),\n    \"商品名称列表\": String(productList.map(p => String(p.product_name || '')).join(',')),\n    \"商品ID列表\": String(productList.map(p => String(p.product_id || '')).join(',')),\n    \"商品总数量\": String(productList.reduce((sum, p) => sum + (p.count || 0), 0))\n  };\n  return flowRecord;\n}\n\n// ---------- n8n 入口 ----------\n// items：上游「Code 分页拉满流水」输出的多条目，每条 item.json 为一条 flow\n// ========== 主执行循环 (关键修正点) ==========\nconst results = [];\n\nfor (const item of items) {\n  const json = item.json;\n  \n  // 场景 A: 输入数据包含 data_list (通常是 HTTP Request 分页返回的原始结构)\n  if (json.data_list && Array.isArray(json.data_list)) {\n    for (const orderFlow of json.data_list) {\n      results.push({\n        json: buildFlowRow(orderFlow)\n      });\n    }\n  } \n  // 场景 B: 输入数据已经是单条订单 (上游可能用了 Split Out 节点)\n  else if (json.order_id) {\n    results.push({\n      json: buildFlowRow(json)\n    });\n  }\n}\n\nreturn results;\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '提取结算数据' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        736
+      ],
+      "id": "a55fda5f-8037-4575-948a-b485fd43bcb3",
+      "name": "提取结算数据",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// ========== n8n Code 节点：售后详情清洗 ==========\n// 上游：HTTP 售后详情（单条响应）。模式：Run Once for Each Item。\n// 输入：items[0].json = 微信售后详情 API 整包（含 errcode, after_sale_order）\n// 输出： [{json: detail_data}]，键名对应 ods_微信_售后_全量 列名\n\nfunction tsToStr(timestamp) {\n  if (timestamp && (typeof timestamp === 'number' || typeof timestamp === 'string')) {\n    const tsNum = typeof timestamp === 'string' ? parseInt(timestamp) : timestamp;\n    if (tsNum > 0) {\n      const date = new Date(tsNum * 1000);\n      const year = date.getFullYear();\n      const month = String(date.getMonth() + 1).padStart(2, '0');\n      const day = String(date.getDate()).padStart(2, '0');\n      const hours = String(date.getHours()).padStart(2, '0');\n      const minutes = String(date.getMinutes()).padStart(2, '0');\n      const seconds = String(date.getSeconds()).padStart(2, '0');\n      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;\n    }\n  }\n  return '';\n}\n\nfunction centsToYuan(cents) {\n  if (cents && (typeof cents === 'number' || typeof cents === 'string')) {\n    const num = typeof cents === 'string' ? parseFloat(cents) : cents;\n    return Math.round(num / 100 * 100) / 100;\n  }\n  return 0.0;\n}\n\nfunction getEnumDesc(enumMap, value, defaultVal = '未知') {\n  if (value === null || value === undefined) return defaultVal;\n  return enumMap[value] !== undefined ? enumMap[value] : `${defaultVal}(${value})`;\n}\n\nconst AFTERSALE_STATUS_MAP = {\n  \"USER_CANCELD\": \"用户取消申请\", \"MERCHANT_PROCESSING\": \"商家受理中\", \"MERCHANT_REJECT_REFUND\": \"商家拒绝退款\",\n  \"MERCHANT_REJECT_RETURN\": \"商家拒绝退货退款\", \"USER_WAIT_RETURN\": \"待买家退货\", \"RETURN_CLOSED\": \"退货退款关闭\",\n  \"MERCHANT_WAIT_RECEIPT\": \"待商家收货\", \"MERCHANT_OVERDUE_REFUND\": \"商家逾期未退款\", \"MERCHANT_REFUND_SUCCESS\": \"退款完成\",\n  \"MERCHANT_RETURN_SUCCESS\": \"退货退款完成\", \"PLATFORM_REFUNDING\": \"平台退款中\", \"PLATFORM_REFUND_FAIL\": \"平台退款失败\",\n  \"USER_WAIT_CONFIRM\": \"待用户确认\", \"MERCHANT_REFUND_RETRY_FAIL\": \"商家打款失败，客服关闭售后\", \"MERCHANT_FAIL\": \"售后关闭\",\n  \"USER_WAIT_CONFIRM_UPDATE\": \"待用户处理商家协商\", \"USER_WAIT_HANDLE_MERCHANT_AFTER_SALE\": \"待用户处理商家代发起的售后申请\",\n  \"WAIT_PACKAGE_INTERCEPT\": \"物流线上拦截中\", \"MERCHANT_REJECT_EXCHANGE\": \"商家拒绝换货\", \"MERCHANT_REJECT_RESHIP\": \"商家拒绝发货\",\n  \"USER_WAIT_RECEIPT\": \"待用户收货\", \"MERCHANT_EXCHANGE_SUCCESS\": \"换货完成\"\n};\nconst REFUND_REASON_MAP = {\n  1: \"商家通过店铺管理页或者小助手发起退款\", 2: \"退货退款场景，商家同意买家未上传物流单号情况下确认收货并退款（无运费险）\",\n  3: \"商家通过后台api发起退款\", 4: \"未发货售后平台自动同意\", 5: \"平台介入纠纷退款\", 6: \"特殊场景下平台强制退款\",\n  7: \"退货退款场景，买家同意未上传物流单号情况下商家确认收货并退款（含运费险无法理赔）\", 8: \"商家发货超时，平台退款\",\n  9: \"商家处理买家售后申请超时，平台自动同意退款\", 10: \"用户确认收货超时，平台退款\", 11: \"商家确认收货超时，平台退款\"\n};\nconst AFTERSALE_TYPE_MAP = {\"REFUND\": \"退款\", \"RETURN\": \"退货退款\", \"EXCHANGE\": \"换货\"};\nconst AFTERSALE_SUB_TYPE_MAP = {\"DEFAULT\": \"普通售后\", \"REFUND_PRICE_DIFF\": \"退差价售后\"};\nconst AFTERSALE_REASON_MAP = {\n  \"INCORRECT_SELECTION\": \"拍错/多拍\", \"NO_LONGER_WANT\": \"不想要了\", \"NO_EXPRESS_INFO\": \"无快递信息\", \"EMPTY_PACKAGE\": \"包裹为空\",\n  \"REJECT_RECEIVE_PACKAGE\": \"已拒签包裹\", \"NOT_DELIVERED_TOO_LONG\": \"快递长时间未送达\", \"NOT_MATCH_PRODUCT_DESC\": \"与商品描述不符\",\n  \"QUALITY_ISSUE\": \"质量问题\", \"SEND_WRONG_GOODS\": \"卖家发错货\", \"THREE_NO_PRODUCT\": \"三无产品\", \"FAKE_PRODUCT\": \"假冒产品\",\n  \"NO_REASON_7_DAYS\": \"七天无理由\", \"INITIATE_BY_PLATFORM\": \"平台代发起\", \"OTHERS\": \"其它\"\n};\n\nfunction buildAftersaleRow(result) {\n  if (result.errcode && result.errcode !== 0) return null;\n  const aftersale = result.after_sale_order || {};\n  if (!aftersale || Object.keys(aftersale).length === 0) return null;\n  const productInfo = aftersale.product_info || {};\n  const refundInfo = aftersale.refund_info || {};\n  const returnInfo = aftersale.return_info || {};\n  const merchantUploadInfo = aftersale.merchant_upload_info || {};\n  const refundResp = aftersale.refund_resp || {};\n  const exchangeProductInfo = aftersale.exchange_product_info || {};\n  const exchangeDeliveryInfo = aftersale.exchange_delivery_info || {};\n  const virtualTelNumInfo = aftersale.virtual_tel_num_info || {};\n  const details = aftersale.details || {};\n  const giftProductList = productInfo.gift_product_list || [];\n  const exchangeAddressInfo = exchangeDeliveryInfo.address_info || {};\n  const returnAddressInfo = returnInfo.address_info || {};\n  const giftDetails = [];\n  for (const gift of giftProductList) {\n    giftDetails.push({\n      \"赠品商品SPUID\": String(gift.product_id || '').trim(),\n      \"赠品SKUID\": String(gift.sku_id || '').trim(),\n      \"赠品数量\": String(gift.count || 0)\n    });\n  }\n  const mediaList = Array.isArray(details[\"media id list\"]) ? details[\"media id list\"] : [];\n\n  const detailData = {\n    \"售后单ID\": String(aftersale.after_sale_order_id || '').trim(),\n    \"售后单状态\": String(aftersale.status || '').trim(),\n    \"售后单状态描述\": getEnumDesc(AFTERSALE_STATUS_MAP, aftersale.status).trim(),\n    \"订单归属人OpenID\": String(aftersale.openid || '').trim(),\n    \"订单归属人UnionID\": String(aftersale.unionid || '').trim(),\n    \"礼物订单赠送者OpenID\": String(aftersale.present_giver_openid || '').trim(),\n    \"礼物订单赠送者UnionID\": String(aftersale.present_giver_unionid || '').trim(),\n    \"纠纷ID\": String(aftersale.complaint_id || '').trim(),\n    \"原订单号\": String(aftersale.order_id || '').trim(),\n    \"售后单创建时间\": tsToStr(aftersale.create_time).trim(),\n    \"售后单更新时间\": tsToStr(aftersale.update_time).trim(),\n    \"当前状态截止时间\": tsToStr(aftersale.deadline).trim(),\n    \"商责额外赔付金额(元)\": String(centsToYuan(aftersale.compensation_liability_amount || 0)).trim(),\n    \"实际退款金额(分)\": String(aftersale.refund_amount || 0).trim(),\n    \"实际退款金额(元)\": String(centsToYuan(aftersale.refund_amount || 0)).trim(),\n    \"售后类型\": String(aftersale.type || '').trim(),\n    \"售后类型描述\": getEnumDesc(AFTERSALE_TYPE_MAP, aftersale.type).trim(),\n    \"售后子类型\": String(aftersale.sub_type || '').trim(),\n    \"售后子类型描述\": getEnumDesc(AFTERSALE_SUB_TYPE_MAP, aftersale.sub_type).trim(),\n    \"商品SPUID\": String(productInfo.product_id || '').trim(),\n    \"商品SKUID\": String(productInfo.sku_id || '').trim(),\n    \"售后数量\": String(productInfo.count || 0).trim(),\n    \"是否极速退款\": String(productInfo.fast_refund || false).trim(),\n    \"赠品信息\": JSON.stringify(giftDetails).trim(),\n    \"SKU实际价格(分)\": String(productInfo.sku_real_price || 0).trim(),\n    \"SKU实际价格(元)\": String(centsToYuan(productInfo.sku_real_price || 0)).trim(),\n    \"商品原始价格(分)\": String(productInfo.product_price || 0).trim(),\n    \"商品原始价格(元)\": String(centsToYuan(productInfo.product_price || 0)).trim(),\n    \"SKU图片列表\": String((productInfo.sku_imgs || []).join(';')).trim(),\n    \"商家自定义商品ID\": String(productInfo.out_product_id || '').trim(),\n    \"商家自定义SKUID\": String(productInfo.out_sku_id || '').trim(),\n    \"退款金额(分)\": String(refundInfo.amount || 0).trim(),\n    \"退款金额(元)\": String(centsToYuan(refundInfo.amount || 0)).trim(),\n    \"退款直接原因\": String(refundInfo.refund_reason || '').trim(),\n    \"退款直接原因描述\": getEnumDesc(REFUND_REASON_MAP, refundInfo.refund_reason).trim(),\n    \"平台优惠退款金额(分)\": String(refundInfo.platform_discount_return_amount || 0).trim(),\n    \"平台优惠退款金额(元)\": String(centsToYuan(refundInfo.platform_discount_return_amount || 0)).trim(),\n    \"退款原因编码\": String(aftersale.reason || '').trim(),\n    \"退款原因描述\": getEnumDesc(AFTERSALE_REASON_MAP, aftersale.reason).trim(),\n    \"退款原因解释\": String(aftersale.reason_text || '').trim(),\n    \"快递单号\": String(returnInfo.waybill_id || '').trim(),\n    \"物流公司ID\": String(returnInfo.delivery_id || '').trim(),\n    \"物流公司名称\": String(returnInfo.delivery_name || '').trim(),\n    \"退货地址-收货人姓名\": String(returnAddressInfo.user_name || '').trim(),\n    \"退货地址-联系方式\": String(returnAddressInfo.tel_number || '').trim(),\n    \"退货地址-详细地址\": String(returnAddressInfo.detail_info || '').trim(),\n    \"商家拒绝原因\": String(merchantUploadInfo.reject_reason || '').trim(),\n    \"退款凭证数量\": String((merchantUploadInfo.refund_certificates || []).length).trim(),\n    \"退款凭证列表\": String((merchantUploadInfo.refund_certificates || []).join(';')).trim(),\n    \"退款响应错误码\": String(refundResp.code || '').trim(),\n    \"退款响应状态码\": String(refundResp.ret || '').trim(),\n    \"退款响应描述\": String(refundResp.message || '').trim(),\n    \"换货商品SPUID\": String(exchangeProductInfo.product_id || '').trim(),\n    \"原商品SKUID\": String(exchangeProductInfo.old_sku_id || '').trim(),\n    \"新商品SKUID\": String(exchangeProductInfo.new_sku_id || '').trim(),\n    \"换货数量\": String(exchangeProductInfo.product_cnt || 0).trim(),\n    \"原商品价格(元)\": String(centsToYuan(exchangeProductInfo.old_sku_price || 0)).trim(),\n    \"新商品价格(元)\": String(centsToYuan(exchangeProductInfo.new_sku_price || 0)).trim(),\n    \"换货快递单号\": String(exchangeDeliveryInfo.waybill_id || '').trim(),\n    \"换货物流公司ID\": String(exchangeDeliveryInfo.delivery_id || '').trim(),\n    \"换货物流公司名称\": String(exchangeDeliveryInfo.delivery_name || '').trim(),\n    \"换货收货人姓名\": String(exchangeAddressInfo.user_name || '').trim(),\n    \"换货邮编\": String(exchangeAddressInfo.postal_code || '').trim(),\n    \"换货省份\": String(exchangeAddressInfo.province_name || '').trim(),\n    \"换货城市\": String(exchangeAddressInfo.city_name || '').trim(),\n    \"换货区县\": String(exchangeAddressInfo.county_name || '').trim(),\n    \"换货详细地址\": String(exchangeAddressInfo.detail_info || '').trim(),\n    \"换货国家码\": String(exchangeAddressInfo.national_code || '').trim(),\n    \"换货联系方式\": String(exchangeAddressInfo.tel_number || '').trim(),\n    \"换货门牌号码\": String(exchangeAddressInfo.house_number || '').trim(),\n    \"换货虚拟商品联系方式\": String(exchangeAddressInfo.virtual_order_tel_number || '').trim(),\n    \"虚拟号码\": String(virtualTelNumInfo.virtual_tel_number || '').trim(),\n    \"虚拟号码过期时间\": tsToStr(virtualTelNumInfo.virtual_tel_expire_time).trim(),\n    \"用户申请描述\": String(details.desc || '').trim(),\n    \"用户是否收到货\": String(details.receive_product || false).trim(),\n    \"用户是否收到货描述\": (details.receive_product ? \"收到货\" : \"未收到货\").trim(),\n    \"取消时间\": tsToStr(details.cancel_time).trim(),\n    \"联系方式\": String(details.tel_number || '').trim(),\n    \"媒体ID列表\": String(mediaList.join(';')).trim(),\n    \"详情中的售后类型\": String(details.after_sale_type || 0).trim()\n  };\n  return detailData;\n}\n\n// ---------- n8n 入口 ----------\nconst out = [];\nfor (const item of items) {\n  const row = buildAftersaleRow(item.json || {});\n  if (row !== null) {\n    out.push({json: row});\n  }\n}\nreturn out;\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '截取售后详情' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2816,
+        464
+      ],
+      "id": "c74dae38-2163-4257-a0ee-cc0339beb892",
+      "name": "截取售后详情"
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "ods_微信_售后_全量",
+          "mode": "list",
+          "cachedResultName": "ods_微信_售后_全量"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3056,
+        464
+      ],
+      "id": "2a700825-25b4-47c2-b6c5-6345ae4a0d26",
+      "name": "ods_微信_售后_全量更新",
+      "executeOnce": false,
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "ods_微信_订单_全量",
+          "mode": "list",
+          "cachedResultName": "ods_微信_订单_全量"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3056,
+        144
+      ],
+      "id": "33a35108-fb29-4428-a0f2-2ceaad8a3e12",
+      "name": "ods_微信_订单_全量更新",
+      "executeOnce": false,
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "ods_微信_结算_全量",
+          "mode": "list",
+          "cachedResultName": "ods_微信_结算_全量"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3056,
+        720
+      ],
+      "id": "eff18622-360b-476c-857a-68b85f7506aa",
+      "name": "ods_微信_结算_全量更新",
+      "executeOnce": false,
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n// 从Set节点获取总时间戳\nconst totalStartTs = $node[\"微信AccessToken\"].json[\"start_ts\"];\nconst totalEndTs = $node[\"微信AccessToken\"].json[\"end_ts\"];\nconst accesstoken = $input.first().json.body.access_token\n// 7天对应的秒数：7*24*60*60 = 604800\nconst sevenDaysInSeconds = 60 * 60 * 24 * 7;\n\n// 存储拆分后的所有区间\nconst timeRanges = [];\n\n// 循环拆分时间区间\nlet currentStartTs = totalStartTs;\nwhile (currentStartTs < totalEndTs) {\n    // 计算当前区间的结束时间（最多7天，不超过总结束时间）\n    let currentEndTs = currentStartTs + sevenDaysInSeconds - 1; // 减1避免重复（比如0点到下一个0点前1秒）\n    if (currentEndTs > totalEndTs) {\n        currentEndTs = totalEndTs;\n    }\n\n    // 转换为可读时间（可选，方便调试）\n    const formatDate = (ts) => new Date(ts * 1000).toLocaleString('zh-CN');\n    \n    // 添加当前区间到数组\n    timeRanges.push({\n        start_timestamp: currentStartTs,\n        end_timestamp: currentEndTs,\n        start_time: formatDate(currentStartTs),\n        end_time: formatDate(currentEndTs),\n        accesstoken,\n        page_size:100\n    });\n\n    // 移动到下一个区间（开始时间=当前结束时间+1）\n    currentStartTs = currentEndTs + 1;\n}\n\n// 返回所有拆分后的区间（供后续节点调用）\nreturn timeRanges\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '时间段拆分-周' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        144
+      ],
+      "id": "f19cdeb4-a2ae-4dc4-9290-2333b1ec9a8d",
+      "name": "时间段拆分-周"
+    },
+    {
+      "parameters": {
+        "content": "## 📱 微信小店采集模块\n\n采集内容：\n- 订单数据\n- 售后数据\n- 结算数据\n\n对应Python: wechat.py",
+        "height": 1056,
+        "width": 4508
+      },
+      "id": "fba7fafa-faa1-459e-9305-5bddb85b3517",
+      "name": "📱 微信小店采集说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -80,
+        -48
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "batchSize": 10000,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2320,
+        704
+      ],
+      "id": "8c8d455b-7bb0-4cc5-8d7b-18348fffe093",
+      "name": "分批导入结算数据"
+    },
+    {
+      "parameters": {
+        "amount": 0.1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2096,
+        160
+      ],
+      "id": "1476e4e6-d701-412a-ae4e-2ba04bee68d9",
+      "name": "微信防限流",
+      "webhookId": "837ce29a-c550-4301-a750-8fbb897fcbca"
+    },
+    {
+      "parameters": {
+        "amount": 0.1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2096,
+        480
+      ],
+      "id": "77cfc097-73fc-43aa-9baf-4eba4bf1cb3d",
+      "name": "微信防限流1",
+      "webhookId": "0bc84e8d-9163-476c-b361-3f0269a9220e"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2096,
+        736
+      ],
+      "id": "4aa5976d-cb35-45fe-a2f4-b23c227db391",
+      "name": "微信防限流2",
+      "webhookId": "0bc84e8d-9163-476c-b361-3f0269a9220e"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3568,
+        144
+      ],
+      "id": "1f241db3-b021-4619-98ef-b77557f93c76",
+      "name": "微信防限流3",
+      "webhookId": "952624f5-0ac1-449a-8aee-f595180b3a12"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3568,
+        464
+      ],
+      "id": "5841d4f0-200a-4685-9ff5-fe47c6ab6ad8",
+      "name": "微信防限流4",
+      "webhookId": "32f75519-b914-488a-bfa8-a06d2d264e53"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1376,
+        144
+      ],
+      "id": "49f63e46-1397-42e9-bef7-98d39765de64",
+      "name": "微信分批获取订单号"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1376,
+        464
+      ],
+      "id": "f0ad720d-72e8-4a24-a4ad-9a21b8f5d1d2",
+      "name": "微信分批获取售后单号"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1376,
+        720
+      ],
+      "id": "c40f0070-e799-4680-aabb-c5a98ed5496e",
+      "name": "微信分批获取结算数据"
+    },
+    {
+      "parameters": {
+        "batchSize": 50,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2320,
+        128
+      ],
+      "id": "aa5cb601-aa8d-412d-9163-b66a8128450e",
+      "name": "微信分批获取订单详情"
+    },
+    {
+      "parameters": {
+        "batchSize": 50,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2320,
+        448
+      ],
+      "id": "846d2d38-9894-4172-9e63-f09b348e05af",
+      "name": "微信分批获取售后详情"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        144
+      ],
+      "id": "c9de2fc4-003e-412d-95f0-3b49079033c7",
+      "name": "清理内存"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        464
+      ],
+      "id": "c3215b32-a82c-4fe6-8d1e-b611063bead4",
+      "name": "清理内存1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3792,
+        112
+      ],
+      "id": "fd57fe50-9155-450f-aceb-3ac708ad548b",
+      "name": "清理内存2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3808,
+        432
+      ],
+      "id": "8212194f-07cb-40a6-8c57-2bd5df2e5fdf",
+      "name": "清理内存3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3808,
+        688
+      ],
+      "id": "2226bb36-11dd-40c9-81e2-23281c44bab4",
+      "name": "清理内存4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8a855f4f-a5fd-48f8-aca3-8e591e282123",
+              "leftValue": "={{ $json.is_empty }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1872,
+        32
+      ],
+      "id": "35487745-9b35-499a-8bfb-987f85533b0f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8a855f4f-a5fd-48f8-aca3-8e591e282123",
+              "leftValue": "={{ $json.is_empty }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1872,
+        352
+      ],
+      "id": "4986b6d6-b382-49e6-b0f4-b96cdbcf6b43",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "TRUNCATE Table ods.ods_微信_订单_全量;\n\nTRUNCATE Table ods.ods_微信_售后_全量;\n\nTRUNCATE Table ods.ods_微信_结算_全量;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        272,
+        464
+      ],
+      "id": "844c9629-eb8f-485f-9c9d-d6ae42177837",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "3iKBhfCr5igWvxFr",
+          "name": "o d s"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "appid"
+            },
+            {
+              "name": "secret"
+            },
+            {
+              "name": "start_time"
+            },
+            {
+              "name": "end_time"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        464
+      ],
+      "id": "0a7aa799-2fa9-4ba6-911c-c4f4275cb582",
+      "name": "微信小店API采集"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "微信参数配置": {
+      "main": [
+        [
+          {
+            "node": "刷新AccessToken",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信AccessToken": {
+      "main": [
+        [
+          {
+            "node": "时间段拆分-周",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "时间段拆分-天",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "微信分批获取结算数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "刷新AccessToken": {
+      "main": [
+        [
+          {
+            "node": "微信AccessToken",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取订单号": {
+      "main": [
+        [
+          {
+            "node": "提取订单号",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取订单号": {
+      "main": [
+        [
+          {
+            "node": "微信防限流",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取订单详情": {
+      "main": [
+        [
+          {
+            "node": "提取订单详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "时间段拆分-天": {
+      "main": [
+        [
+          {
+            "node": "微信分批获取售后单号",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取售后详情": {
+      "main": [
+        [
+          {
+            "node": "截取售后详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取售后单号": {
+      "main": [
+        [
+          {
+            "node": "微信防限流1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取订单详情": {
+      "main": [
+        [
+          {
+            "node": "ods_微信_订单_全量更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取售后单号": {
+      "main": [
+        [
+          {
+            "node": "提取售后单号",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取结算数据": {
+      "main": [
+        [
+          {
+            "node": "提取结算数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "提取结算数据": {
+      "main": [
+        [
+          {
+            "node": "微信防限流2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "截取售后详情": {
+      "main": [
+        [
+          {
+            "node": "ods_微信_售后_全量更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ods_微信_售后_全量更新": {
+      "main": [
+        [
+          {
+            "node": "清理内存1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ods_微信_订单_全量更新": {
+      "main": [
+        [
+          {
+            "node": "清理内存",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ods_微信_结算_全量更新": {
+      "main": [
+        [
+          {
+            "node": "分批导入结算数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "时间段拆分-周": {
+      "main": [
+        [
+          {
+            "node": "微信分批获取订单号",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分批导入结算数据": {
+      "main": [
+        [
+          {
+            "node": "清理内存4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ods_微信_结算_全量更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信防限流": {
+      "main": [
+        [
+          {
+            "node": "微信分批获取订单号",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信防限流1": {
+      "main": [
+        [
+          {
+            "node": "微信分批获取售后单号",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信防限流2": {
+      "main": [
+        [
+          {
+            "node": "微信分批获取结算数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信防限流3": {
+      "main": [
+        [
+          {
+            "node": "微信分批获取订单详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信防限流4": {
+      "main": [
+        [
+          {
+            "node": "微信分批获取售后详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信分批获取订单号": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "获取订单号",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信分批获取售后单号": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "获取售后单号",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信分批获取结算数据": {
+      "main": [
+        [
+          {
+            "node": "分批导入结算数据",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "获取结算数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信分批获取订单详情": {
+      "main": [
+        [
+          {
+            "node": "清理内存2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "获取订单详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信分批获取售后详情": {
+      "main": [
+        [
+          {
+            "node": "清理内存3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "获取售后详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清理内存": {
+      "main": [
+        [
+          {
+            "node": "微信防限流3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清理内存1": {
+      "main": [
+        [
+          {
+            "node": "微信防限流4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清理内存2": {
+      "main": [
+        []
+      ]
+    },
+    "清理内存3": {
+      "main": [
+        []
+      ]
+    },
+    "清理内存4": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "微信分批获取订单详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "微信分批获取售后详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "微信参数配置",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "微信小店API采集": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "c040c378-7132-4517-912b-e5a4b35dbbed",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4b9303c6c8a2eec511b651c17635d4281c370f70a0983d8940cfac69c6d627a3"
+  },
+  "id": "wjIBgKtKM3LXEXYL",
+  "tags": []
+}

@@ -1,0 +1,910 @@
+# 电商全域数据中台 & n8n 自动化分析系统 (Data-Agent Hub)
+
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
+[![n8n](https://img.shields.io/badge/n8n-Workflow%20Automation-orange)](https://n8n.io/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+> 基于 **Python CLI 脚本 + n8n 工作流引擎** 的解耦式数据中台架构，实现多平台电商数据采集、数仓建模与飞书自动化同步。
+
+---
+
+## 🚀 项目概述 (Project Overview)
+
+本项目是一套面向传媒电商业务的全域数据中台解决方案，覆盖 **抖店、小红书、微信视频号、巨量千川、电商罗盘** 五大平台。系统采用 **"Python CLI 脚本 + n8n 工作流引擎"** 的解耦架构：
+
+- **底层业务逻辑**：Python CLI 脚本实现 ETL 提取、SQL 建模、飞书同步
+- **调度编排层**：n8n 实现 Master-Sub 工作流调度，解决 Cron 绝对时间调度带来的资源竞争问题
+- **数据分层**：ODS（原始层）→ DWD（明细层）→ ADS（应用层）标准数仓建模
+
+**核心能力**：
+- 多平台订单/售后/结算数据自动化采集（API + 爬虫双模式）
+- 分钟级/日级自动化调度，支持增量/全量同步
+- 飞书多维表双向同步（MySQL ↔ 飞书）
+- 素材智能诊断（Whisper ASR + 千问大模型）
+- **🤖 智能数据分析 Agent（Text-to-SQL + 自动可视化）**
+
+---
+
+## ✨ 功能特性 (Features)
+
+### API 数据采集
+
+| 平台 | 数据类型 | 字段数量 | 特性 |
+|------|----------|----------|------|
+| **抖店** | 订单/售后/结算 | 300+/180+/50+ | 多线程、自动Token刷新、增量采集 |
+| **小红书** | 订单/售后/结算 | 100+/60+/50+ | 多线程、增量采集 |
+| **微信视频号** | 订单/售后/结算 | 100+/60+/80+ | 多线程、自动Token管理 |
+| **巨量千川** | 直播画面/视频/其他创意 | 60+/80+/9 | 分钟级数据、多账户支持 |
+
+### 爬虫数据采集
+
+- **内容榜**：热门内容数据采集
+- **达人榜**：达人排行榜数据
+- **商品榜**：商品销售排行
+- **搜索榜**：搜索热词排行
+- **店铺榜**：店铺销售排行
+
+### 数据建模
+
+- 自动化 SQL 建表
+- 数据仓库分层设计（ODS/DWD/DIM）
+- 支持增量更新
+
+### 飞书同步
+
+- MySQL ↔ 飞书多维表双向同步
+- 主键去重、增量同步
+- 字段映射、类型转换
+
+### 🤖 智能数据分析 Agent
+
+| 能力 | 说明 |
+|------|------|
+| **Text-to-SQL** | 用户用自然语言提问，AI 自动生成 SQL 查询语句 |
+| **多轮对话记忆** | 基于 LangChain Memory Buffer，支持上下文关联追问 |
+| **智能图表生成** | 自动识别数据特征，生成可视化图表（QuickChart API） |
+| **飞书交互卡片** | 推送包含分析结论 + 图表 + 数据表格的交互式消息 |
+| **错误自动告警** | 工作流异常时自动推送飞书告警消息 |
+
+**典型应用场景**：
+- "帮我分析本月抖店 GMV TOP10 达人"
+- "对比上周和本周各平台订单量变化趋势"
+- "查询最近7天千川投放各主播的 ROI 数据"
+
+---
+
+## 🤖 智能数据分析 Agent (AI Data Analysis Agent)
+
+### 核心亮点
+
+本项目集成了一个基于 **n8n + LangChain + 千问大模型** 的智能数据分析 Agent，实现 **自然语言 → SQL → 可视化图表** 的全链路自动化：
+
+```
+用户提问（飞书）→ AI Agent（Text-to-SQL）→ MySQL 查询 → 自动生成图表 → 飞书推送结果
+```
+
+> 💡 **建议在此处插入一张数据分析 Agent 工作流截图**：`![数据分析Agent工作流](docs/images/data_analysis_agent.png)`
+
+### 架构设计
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     飞书机器人 (Webhook 触发)                     │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ 用户提问
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    AI Agent (LangChain + Qwen)                   │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │ System      │  │ Text-to-SQL │  │ Memory      │             │
+│  │ Prompt      │  │ Generator   │  │ Buffer      │             │
+│  │ (DDL Schema)│  │             │  │ (多轮对话)   │             │
+│  └─────────────┘  └─────────────┘  └─────────────┘             │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ 生成的 SQL
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     MySQL Tool (执行查询)                        │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │ dwd_电商数据_宽表 │  │ dwd_千川素材h   │  │ ads_直播素材_m  │ │
+│  │ (全渠道订单)     │  │ (投放素材)       │  │ (直播分钟数据)  │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ 查询结果
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    智能输出处理 (Code Node)                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │ 文本分析    │  │ 图表 JSON   │  │ Excel 数据  │             │
+│  │ (Markdown)  │  │ (QuickChart)│  │ (表格组件)  │             │
+│  └─────────────┘  └─────────────┘  └─────────────┘             │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │ 推送结果
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     飞书消息卡片 (交互式推送)                     │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 📊 智能数据中台洞察                                          ││
+│  │ ─────────────────────────────────────────────────────────── ││
+│  │ 【分析结论】                                                 ││
+│  │ 本月抖店GMV为 xxx 万元，环比增长 xx%...                      ││
+│  │ ─────────────────────────────────────────────────────────── ││
+│  │ [图表图片]                                                   ││
+│  │ ─────────────────────────────────────────────────────────── ││
+│  │ [数据明细表格] (支持翻页)                                    ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 核心能力
+
+| 能力 | 说明 |
+|------|------|
+| **Text-to-SQL** | 用户用自然语言提问，AI 自动生成 SQL 查询语句 |
+| **多轮对话记忆** | 基于 LangChain Memory Buffer 实现上下文记忆 |
+| **DDL Schema 注入** | 将数据库表结构注入 System Prompt，确保 SQL 准确性 |
+| **自动可视化** | 智能判断是否需要生成图表，调用 QuickChart API |
+| **飞书交互卡片** | 支持 Markdown、图片、表格组件的富文本推送 |
+| **错误兜底** | 异常时自动推送告警消息到飞书群 |
+
+### 支持的数据表
+
+| 数据库 | 表名 | 用途 |
+|--------|------|------|
+| `dwd` | `dwd_电商数据_宽表` | 抖店/微信/小红书全渠道订单+售后+结算明细 |
+| `dwd` | `dwd_千川素材h_中间表` | 千川投放素材维度的转化分析 |
+| `ads` | `ads_直播素材_m分摊表` | 每分钟每个主播的直播间明细（直播+投放+订单） |
+
+### 使用示例
+
+**用户提问**：
+> "帮我分析一下本月抖店的GMV，按达人分组，取前10名"
+
+**AI Agent 自动处理流程**：
+1. 解析用户意图，识别时间范围（本月）、平台（抖店）、指标（GMV）
+2. 生成 SQL 查询语句：
+```sql
+SELECT 
+    `达人名称`,
+    SUM(`买家实付`) as GMV
+FROM dwd.dwd_电商数据_宽表
+WHERE `平台` = '抖店'
+  AND `支付时间` >= '2024-03-01'
+  AND `支付时间` < '2024-04-01'
+GROUP BY `达人名称`
+ORDER BY GMV DESC
+LIMIT 10
+```
+3. 执行查询并分析结果
+4. 自动生成柱状图（通过 QuickChart API）
+5. 推送飞书消息卡片（包含分析结论 + 图表 + 数据表格）
+
+### 技术实现
+
+```javascript
+// n8n AI Agent 节点配置
+{
+  "type": "@n8n/n8n-nodes-langchain.agent",
+  "parameters": {
+    "promptType": "define",
+    "text": "={{ JSON.parse($json.body.event.message.content).text }}",
+    "options": {
+      "systemMessage": "你是一个资深电商数据中台专家...",
+      "enableStreaming": true
+    }
+  }
+}
+
+// MySQL Tool 节点配置
+{
+  "type": "n8n-nodes-base.mySqlTool",
+  "parameters": {
+    "operation": "executeQuery",
+    "query": "{{ $fromAI('sql') }}"
+  }
+}
+```
+
+### 错误处理机制
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│ Error       │────▶│ 飞书推送    │────▶│ 告警消息    │
+│ Trigger     │     │ 错误信息    │     │ 卡片        │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+当工作流执行失败时，自动触发错误兜底节点，推送包含以下信息的告警：
+- 工作流名称
+- 报错节点
+- 错误详情
+
+---
+
+## 🏗️ 核心架构与数仓分层 (Architecture & Data Warehouse)
+
+### 系统架构图
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        n8n Master Workflow                       │
+│                    (主调度器 - 解决资源竞争)                       │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        ▼                   ▼                   ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│ Sub-Workflow 1│   │ Sub-Workflow 2│   │ Sub-Workflow 3│
+│   API 采集     │   │   爬虫采集     │   │   SQL 建模    │
+│  (并行执行)    │   │  (串行熔断)    │   │  (顺序执行)   │
+└───────┬───────┘   └───────┬───────┘   └───────┬───────┘
+        │                   │                   │
+        └───────────────────┼───────────────────┘
+                            ▼
+                   ┌───────────────┐
+                   │ Sub-Workflow 4│
+                   │   飞书同步     │
+                   │  (并行执行)    │
+                   └───────────────┘
+```
+
+### 数仓分层设计
+
+| 分层 | 数据库 | 说明 | 核心表 |
+|------|--------|------|--------|
+| **ODS** (Operational Data Store) | `ods` | 原始数据层，保持数据原貌 | `ods_抖店_订单_全量`、`ods_微信_订单_全量`、`ods_红书_订单_全量` |
+| **DWD** (Data Warehouse Detail) | `dwd` | 明细数据层，多源合并清洗 | `dwd_电商数据_宽表`（抖店+微信+小红书 UNION ALL） |
+| **DIM** (Dimension) | `dim` | 维度数据层 | `dim_达人维度`、`dim_商品维度` |
+| **ADS** (Application Data Service) | `ads` | 应用数据层 | 业务指标聚合表 |
+
+> 💡 **设计亮点**：DWD 层通过 `UNION ALL` 实现多平台订单数据统一建模，字段标准化映射，支持跨平台分析。
+
+---
+
+## 📂 目录结构与模块说明 (Directory Structure)
+
+```
+n8n-Multi_Agent_Workflow/
+├── API_data_collect/          # API 数据采集模块
+│   ├── order_D/               # 抖店订单采集
+│   │   ├── main.py            # CLI 入口
+│   │   └── doudian/           # 抖店 SDK 封装
+│   ├── order_H/               # 小红书订单采集
+│   │   ├── main.py
+│   │   └── xiaohongshu/
+│   ├── order_W/               # 微信视频号订单采集
+│   │   ├── main.py
+│   │   └── weixin/
+│   └── qc_material/           # 巨量千川素材采集
+│       ├── main.py
+│       └── qianchuan/
+│
+├── web_crawler/               # 爬虫数据采集模块
+│   ├── luopan_rank/           # 电商罗盘榜单爬虫
+│   │   ├── rank_kol.py        # 达人榜单
+│   │   ├── rank_product.py    # 商品榜单
+│   │   ├── rank_content.py    # 内容榜单
+│   │   └── config.py          # 行业类目配置
+│   └── material_ASR/          # 素材智能诊断
+│       ├── material_qianchuan.py  # 千川素材分析
+│       └── material_rank.py
+│
+├── SQL_create_table/          # SQL 建表脚本
+│   ├── order_total.sql        # DWD 宽表建表语句
+│   ├── dim_order_kol.sql      # 达人维度表
+│   └── dim_order_product.sql  # 商品维度表
+│
+├── mysql_syn_feishu/          # 飞书同步模块
+│   ├── run_sync.py            # 统一同步入口
+│   ├── sync_order_kol.py      # 达人维度同步
+│   ├── sync_order_product.py  # 商品维度同步
+│   └── feishu_sync/           # 飞书 SDK 封装
+│
+├── n8n_Workflow/              # n8n 工作流 JSON
+│   ├── 数据中台 - 完整ETL工作流Agent.json   # 主ETL工作流
+│   ├── 数据分析Agent.json                 # 🤖 AI数据分析Agent（Text-to-SQL）
+│   ├── [ETL-WeChat] 订单+售后+结算同步.json
+│   └── [MySQL-Feishu] 通用Sync逻辑.json
+│
+└── n8n_setting/               # n8n Docker 部署配置
+    ├── docker-compose.yml
+    └── Dockerfile
+```
+
+---
+
+## ⚡ 快速使用 (CLI 命令行传参调用示例)
+
+### 环境变量配置
+
+```bash
+# 数据库配置
+export DB_HOST=<YOUR_DB_HOST>
+export DB_PORT=3306
+export DB_USER=<YOUR_DB_USER>
+export DB_PASSWORD=<YOUR_DB_PASSWORD>
+export DB_NAME=ods
+
+# 平台 API 凭证
+export DOUDIAN_APP_KEY=<YOUR_APP_KEY>
+export DOUDIAN_APP_SECRET=<YOUR_APP_SECRET>
+export XHS_APP_KEY=<YOUR_APP_KEY>
+export XHS_APP_SECRET=<YOUR_APP_SECRET>
+export XHS_ACCESS_TOKEN=<YOUR_ACCESS_TOKEN>
+export WEIXIN_APP_ID=<YOUR_APP_ID>
+export WEIXIN_APP_SECRET=<YOUR_APP_SECRET>
+export QIANCHUAN_APP_ID=<YOUR_APP_ID>
+export QIANCHUAN_APP_SECRET=<YOUR_APP_SECRET>
+export QIANCHUAN_REFRESH_TOKEN=<YOUR_REFRESH_TOKEN>
+```
+
+### 1. 抖店订单采集
+
+```bash
+# 默认采集昨天数据
+python API_data_collect/order_D/main.py \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+
+# 指定时间范围采集
+python API_data_collect/order_D/main.py \
+    --order_start "2024-01-01 00:00:00" \
+    --order_end "2024-01-31 23:59:59" \
+    --settle_start "2024-01-01 00:00:00" \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+
+# 跳过特定数据类型
+python API_data_collect/order_D/main.py \
+    --skip_orders \
+    --skip_aftersales \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+
+# 调整并发线程数
+python API_data_collect/order_D/main.py \
+    --max_workers 100 \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+```
+
+### 2. 小红书订单采集
+
+```bash
+# 基础采集
+python API_data_collect/order_H/main.py \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+
+# 指定时间范围
+python API_data_collect/order_H/main.py \
+    --order_start "2024-01-01 00:00:00" \
+    --order_end "2024-01-31 23:59:59" \
+    --settle_start "2024-01-01 00:00:00" \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+```
+
+### 3. 微信视频号订单采集
+
+```bash
+# 采集全部数据类型（订单+售后+结算）
+python API_data_collect/order_W/main.py \
+    --data-type all \
+    --start-date "2024-01-01 00:00:00" \
+    --end-date "2024-01-31 23:59:59" \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+
+# 仅采集订单数据
+python API_data_collect/order_W/main.py \
+    --data-type order \
+    --start-date "2024-01-01 00:00:00" \
+    --end-date "2024-01-31 23:59:59" \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+```
+
+### 4. 巨量千川素材采集
+
+```bash
+# 采集全部素材类型（直播间画面+视频+其他创意）
+python API_data_collect/qc_material/main.py \
+    --data-type all \
+    --start-date "2024-01-01 00:00:00" \
+    --end-date "2024-01-31 23:59:59" \
+    --accounts "advertiser_id:aweme_id:账户名称,advertiser_id2:aweme_id2:账户名称2" \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+
+# 仅采集直播间画面数据
+python API_data_collect/qc_material/main.py \
+    --data-type live \
+    --accounts "123456:987654321:测试账户" \
+    --db_host ${DB_HOST} \
+    --db_user ${DB_USER} \
+    --db_password ${DB_PASSWORD} \
+    --db_name ${DB_NAME}
+```
+
+### 5. 电商罗盘榜单爬虫
+
+```bash
+# 达人榜单采集
+python web_crawler/luopan_rank/rank_kol.py \
+    --start_time "2024-01-01" \
+    --end_time "2024-01-31" \
+    --cookie "<YOUR_COOKIE>" \
+    --db_url "mysql+pymysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:3306/ods?charset=utf8mb4"
+```
+
+### 6. 飞书数据同步
+
+```bash
+# 增量同步所有表
+python mysql_syn_feishu/run_sync.py --all
+
+# 全量同步所有表
+python mysql_syn_feishu/run_sync.py --all --full-sync
+
+# 同步指定表
+python mysql_syn_feishu/run_sync.py --tables kol,product,rank
+
+# 仅同步达人维度表（全量）
+python mysql_syn_feishu/run_sync.py --tables kol --full-sync
+```
+
+---
+
+## 📦 模块详细说明 (Module Details)
+
+### API 数据采集模块
+
+每个平台的数据采集模块都采用模块化设计：
+
+```
+平台模块/
+├── __init__.py           # 模块导出
+├── config.py             # 配置和映射字典
+├── utils.py              # 工具函数
+├── client.py             # API客户端
+├── token_service.py      # Token管理
+├── order_service.py      # 订单服务
+├── aftersale_service.py  # 售后服务
+└── settle_service.py     # 结算服务
+```
+
+**核心特性**：
+- ✅ 支持命令行参数传入
+- ✅ 支持环境变量配置
+- ✅ 多线程批量获取（可配置 `--max_workers`）
+- ✅ 自动 Token 刷新
+- ✅ 数据库自动写入（支持 `append`/`replace` 模式）
+
+### 爬虫模块
+
+基于 DrissionPage 和 RPC 签名服务实现：
+
+```
+web_crawler/
+├── luopan_rank/          # 罗盘榜单爬虫
+├── JS_a_bogus/           # 签名算法（JS）
+├── server.py             # RPC签名服务
+└── hook.py               # 浏览器Hook
+```
+
+**工作原理**：
+1. 启动 Chrome 浏览器（远程调试模式）
+2. 运行 hook.py 注入签名算法
+3. 启动 server.py 提供 RPC 服务
+4. 爬虫脚本调用签名服务获取 a_bogus 参数
+
+### 飞书同步模块
+
+支持 MySQL 与飞书多维表的双向同步：
+
+```python
+from feishu_sync import quick_sync_mysql_to_feishu
+
+quick_sync_mysql_to_feishu(
+    feishu_app_id="cli_xxx",
+    feishu_app_secret="xxx",
+    feishu_app_token="xxx",
+    feishu_table_id="tblxxx",
+    primary_key_field="达人ID",
+    mysql_host="localhost",
+    mysql_user="root",
+    mysql_password="password",
+    mysql_database="test_db",
+    mysql_table="target_table",
+    sql_template="SELECT * FROM source_table",
+    update_time_field="update_time",
+    full_sync=False
+)
+```
+
+---
+
+## 📊 数据库表结构 (Database Schema)
+
+### 主要数据表
+
+| 表名 | 说明 | 数据来源 | 分层 |
+|------|------|----------|------|
+| `ods_抖店_订单_全量` | 抖店订单数据 | 抖店API | ODS |
+| `ods_抖店_售后_全量` | 抖店售后数据 | 抖店API | ODS |
+| `ods_抖店_结算_全量` | 抖店结算数据 | 抖店API | ODS |
+| `ods_红书_订单_全量` | 小红书订单数据 | 小红书API | ODS |
+| `ods_红书_售后_全量` | 小红书售后数据 | 小红书API | ODS |
+| `ods_红书_结算_全量` | 小红书结算数据 | 小红书API | ODS |
+| `ods_微信_订单_全量` | 微信订单数据 | 微信API | ODS |
+| `ods_微信_售后_全量` | 微信售后数据 | 微信API | ODS |
+| `ods_微信_结算_全量` | 微信结算数据 | 微信API | ODS |
+| `ods_千川素材_直播画面_m` | 千川直播分钟数据 | 千川API | ODS |
+| `ods_千川素材_视频_h` | 千川视频小时数据 | 千川API | ODS |
+| `dwd_电商数据_宽表` | 多平台订单合并宽表 | SQL建模 | DWD |
+| `dim_达人维度` | 订单达人维度表 | SQL建模 | DIM |
+| `dim_商品维度` | 订单商品维度表 | SQL建模 | DIM |
+| `dim_达人榜单` | 榜单达人维度表 | SQL建模 | DIM |
+
+---
+
+## ⚙️ n8n 工作流自动化调度设计
+
+### Master-Sub 调度架构
+
+本项目采用 **1 个主工作流 + 4 个子工作流** 的 Master-Sub 架构，解决传统 Cron 绝对时间调度带来的资源竞争问题：
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                   Master Workflow (主调度器)                │
+│                                                            │
+│  触发方式: 每日凌晨 02:00 或手动触发                          │
+│                                                            │
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐ │
+│  │ Switch  │───▶│ Wait    │───▶│ SQL     │───▶│ Notify  │ │
+│  │ (模式)  │    │ (等待)  │    │ (建模)  │    │ (通知)  │ │
+│  └────┬────┘    └────┬────┘    └────┬────┘    └─────────┘ │
+│       │              │              │                      │
+│       ▼              ▼              ▼                      │
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐               │
+│  │Sub-WF 1 │    │Sub-WF 2 │    │Sub-WF 4 │               │
+│  │API采集  │    │爬虫采集  │    │飞书同步  │               │
+│  │(并行)   │    │(串行)   │    │(并行)   │               │
+│  └─────────┘    └─────────┘    └─────────┘               │
+└────────────────────────────────────────────────────────────┘
+```
+
+> 💡 **建议在此处插入一张 n8n 主工作流调度图**：`![n8n 主工作流调度图](docs/images/master_workflow.png)`
+
+### 子工作流详解
+
+#### Sub-Workflow 1: API 数据采集
+
+| 节点 | 命令 | 超时 | 执行策略 |
+|------|------|------|----------|
+| 抖店订单采集 | `python API_data_collect/order_D/main.py` | 7200s | 并行 |
+| 小红书订单采集 | `python API_data_collect/order_H/main.py` | 7200s | 并行 |
+| 微信订单采集 | `python API_data_collect/order_W/main.py` | 7200s | 并行 |
+| 千川素材采集 | `python API_data_collect/qc_material/main.py` | 3600s | 并行 |
+
+> 💡 **建议在此处插入一张 API 采集子工作流截图**：`![API采集子工作流](docs/images/api_workflow.png)`
+
+#### Sub-Workflow 2: 爬虫数据采集
+
+| 节点 | 命令 | 超时 | 执行策略 |
+|------|------|------|----------|
+| 达人榜单采集 | `python web_crawler/luopan_rank/rank_kol.py` | 10800s | **串行** |
+| 商品榜单采集 | `python web_crawler/luopan_rank/rank_product.py` | 10800s | **串行** |
+| 内容榜单采集 | `python web_crawler/luopan_rank/rank_content.py` | 10800s | **串行** |
+
+> ⚠️ **串行熔断机制**：爬虫节点采用串行执行，避免多浏览器实例同时运行导致 OOM。
+
+#### Sub-Workflow 3: SQL 数据建模
+
+```bash
+# 批量执行 SQL 建表脚本
+for f in SQL_create_table/*.sql; do
+    mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p"${MYSQL_PASSWORD}" ${MYSQL_DB} < "$f"
+done
+```
+
+#### Sub-Workflow 4: 飞书数据同步
+
+| 节点 | 命令 | 同步方向 | 执行策略 |
+|------|------|----------|----------|
+| 主播排期同步 | `sync_live_author_schedule.py` | 飞书→MySQL | 并行 |
+| 达人维度同步 | `sync_order_kol.py` | MySQL→飞书 | 并行 |
+| 商品维度同步 | `sync_order_product.py` | MySQL→飞书 | 并行 |
+| 达人榜单同步 | `sync_rank_kol.py` | MySQL→飞书 | 并行 |
+
+### n8n Execute Command 节点配置示例
+
+```json
+{
+  "command": "cd /data && python3 API_data_collect/order_D/main.py --db_host ${DB_HOST} --db_user ${DB_USER} --db_password ${DB_PASSWORD} --db_name ${DB_NAME}",
+  "executeOnce": true,
+  "timeout": 7200,
+  "continueOnFail": false
+}
+```
+
+### 执行时间规划
+
+| 时间 | 任务 | 执行方式 | 预计时长 |
+|------|------|----------|----------|
+| 02:00 | API 数据采集 | 并行 | 2 小时 |
+| 03:00 | 爬虫数据采集 | 串行 | 3 小时 |
+| 04:00 | SQL 建表 | 串行 | 30 分钟 |
+| 04:30 | 飞书同步 | 并行 | 30 分钟 |
+
+> 💡 **调度优化建议**：爬虫任务采用串行执行避免资源竞争，API 采集和飞书同步采用并行执行提升效率。
+
+---
+
+## 🛡️ 容错与高可用机制 (Fault Tolerance)
+
+### 1. API 限流指数退避重试 (Exponential Backoff)
+
+```python
+# API_data_collect/order_D/doudian/client.py
+def request_with_retry(self, method, params, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            result = self.request(method, params)
+            if result:
+                return result
+            wait_time = (2 ** attempt) + 1  # 1s, 3s, 5s
+            time.sleep(wait_time)
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise e
+            time.sleep((2 ** attempt) + 1)
+    return None
+```
+
+### 2. 爬虫串行熔断防 OOM
+
+```python
+# web_crawler/luopan_rank/rank_kol.py
+# 采用 DrissionPage + Chromium 无头模式
+co = ChromiumOptions()
+co.headless(True)
+co.set_argument('--no-sandbox')
+co.set_argument('--disable-gpu')
+co.no_imgs(True)  # 无图模式省流加速
+
+# 串行执行每个榜单采集，避免多浏览器实例 OOM
+for category in INDUSTRY_CATEGORY:
+    for target_date in date_range:
+        for rank_cat in RANK_CATEGORY:
+            # 单个榜单采集完成后释放资源
+            process_rank(category, target_date, rank_cat)
+```
+
+### 3. SQL 安全注入防护
+
+```python
+# mysql_syn_feishu/feishu_sync/mysql_to_feishu.py
+# 使用参数化查询，防止 SQL 注入
+SYNC_SQL_TEMPLATE = """
+    SELECT * FROM {table}
+    WHERE update_time > %s
+"""
+
+cursor.execute(SYNC_SQL_TEMPLATE.format(table=self.table_name), (last_sync_time,))
+```
+
+### 4. 飞书同步幂等性设计
+
+```python
+# 基于 primary_key_field 实现增量同步
+# 已存在的记录自动更新，新记录自动插入
+syncer = MySQLToFeishuSync(
+    feishu_config=FEISHU_CONFIG,
+    mysql_config=MYSQL_CONFIG,
+    primary_key_field="达人UID"  # 主键去重
+)
+syncer.sync(full_sync=False)  # 增量同步
+```
+
+### 5. n8n 工作流错误处理
+
+| 错误类型 | 处理策略 | 重试次数 |
+|----------|----------|----------|
+| API 采集失败 | 指数退避重试 | 3 次 |
+| 爬虫采集失败 | 记录日志，继续执行 | 2 次 |
+| SQL 建表失败 | 记录失败 SQL，继续执行其他 | 0 次 |
+| 飞书同步失败 | 重试后发送告警 | 2 次 |
+
+---
+
+## 📞 技术栈概览 (Tech Stack)
+
+| 分类 | 技术栈 | 用途 |
+|------|--------|------|
+| **编程语言** | Python 3.9+ | 核心业务逻辑开发 |
+| **工作流引擎** | n8n | 自动化调度编排 + AI Agent |
+| **AI/LLM** | LangChain, Qwen (通义千问) | 智能数据分析、Text-to-SQL |
+| **数据库** | MySQL 8.0 | 数仓分层存储 |
+| **爬虫框架** | DrissionPage | 浏览器自动化 |
+| **数据处理** | Pandas, SQLAlchemy | ETL 数据处理 |
+| **大模型** | Whisper (ASR), Qwen | 素材智能诊断 |
+| **可视化** | QuickChart API | 动态图表生成 |
+| **协作平台** | 飞书多维表/机器人 | 数据可视化与协作 |
+| **容器化** | Docker, docker-compose | 环境部署 |
+
+---
+
+## 📋 快速部署
+
+### 环境要求
+
+| 组件 | 版本要求 | 说明 |
+|------|----------|------|
+| Python | 3.9+ | 核心业务逻辑 |
+| Docker | 20.10+ | n8n 容器化部署 |
+| Docker Compose | 2.0+ | 容器编排 |
+| MySQL | 5.7+ / 8.0 | 数仓存储 |
+| Node.js | 16+ | 可选，用于签名服务 |
+
+### 安装依赖
+
+```bash
+pip install requests pandas sqlalchemy pymysql tqdm openai whisper
+```
+
+### 1. 克隆项目
+
+```bash
+git clone https://github.com/<YOUR_USERNAME>/n8n-Multi_Agent_Workflow.git
+cd n8n-Multi_Agent_Workflow
+```
+
+### 2. 配置环境变量
+
+```bash
+cp .env.example .env
+# 编辑 .env 文件，填入真实凭证
+```
+
+### 3. 启动 n8n
+
+```bash
+cd n8n_setting
+docker-compose up -d
+```
+
+### 4. 导入工作流
+
+访问 `http://localhost:5678`，导入 `n8n_Workflow/` 目录下的 JSON 文件。
+
+---
+
+## ❓ 常见问题 (FAQ)
+
+### 1. 脚本路径问题
+
+确保使用相对路径或基于脚本位置的路径：
+
+```bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+```
+
+### 2. Token 过期处理
+
+各平台 Token 有效期：
+
+| 平台 | Token 有效期 | 处理方式 |
+|------|-------------|----------|
+| 抖店 | 7 天 | 自动刷新 |
+| 小红书 | 需手动刷新 | 手动更新 |
+| 微信视频号 | 2 小时 | 自动刷新 |
+| 巨量千川 | 2 小时 | 自动刷新 |
+
+### 3. API 限流处理
+
+默认线程数已优化，如遇限流可降低线程数：
+
+```bash
+python main.py --max_workers 20
+```
+
+### 4. 数据库连接失败
+
+检查项：
+- ✅ 环境变量是否正确
+- ✅ 网络连通性
+- ✅ 数据库用户权限
+- ✅ 防火墙配置
+
+### 5. 爬虫 OOM 问题
+
+**原因**：多浏览器实例同时运行
+
+**解决方案**：
+- 采用串行执行策略
+- 启用无头模式 `co.headless(True)`
+- 启用无图模式 `co.no_imgs(True)`
+
+---
+
+## 🔐 安全建议 (Security)
+
+### 1. 敏感信息管理
+
+- ⚠️ 使用环境变量存储密钥，不要硬编码
+- ⚠️ 不要将密钥提交到版本控制
+- ⚠️ 定期更换 API 密钥
+- ⚠️ 使用 `.env` 文件并添加到 `.gitignore`
+
+### 2. 访问控制
+
+- 🔒 限制数据库访问 IP
+- 🔒 使用最小权限原则
+- 🔒 启用 n8n 基本认证
+- 🔒 定期审计访问日志
+
+### 3. 数据安全
+
+- 💾 定期备份数据库
+- 💾 敏感数据加密存储
+- 💾 日志脱敏处理
+- 💾 数据传输使用 SSL/TLS
+
+---
+
+## 📝 更新日志 (Changelog)
+
+### v2.0.0 (2024-03)
+- ✨ 重构为模块化架构
+- ✨ 支持 n8n 工作流编排
+- ✨ 新增飞书同步模块
+- ✨ 优化爬虫签名服务
+- ✨ 新增素材智能诊断（Whisper + Qwen）
+- ✨ **新增智能数据分析 Agent（Text-to-SQL + 自动可视化）**
+
+### v1.0.0
+- 🎉 初始版本
+- 🎉 单文件脚本
+
+---
+
+## 📄 License
+
+MIT License - 详见 [LICENSE](LICENSE) 文件
+
+---
+
+## 🤝 贡献指南
+
+欢迎提交 Issue 和 Pull Request！
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
+
+---
+
+> **注意**：本项目仅供学习交流使用，请勿用于商业用途。使用前请确保遵守各平台 API 使用规范。

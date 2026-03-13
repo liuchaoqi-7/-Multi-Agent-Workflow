@@ -1,0 +1,71 @@
+services:
+  n8n:
+    # build: .
+    image: docker.m.daocloud.io/n8nio/n8n:nightly-arm64
+    # image: n8n-data-analysis:local
+    container_name: n8n_m4_pro
+    restart: always
+    ports:
+      - "5680:5678"
+    environment:
+      # 基础配置
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5680/
+      - GENERIC_TIMEZONE=Asia/Shanghai
+      - TZ=Asia/Shanghai
+      - N8N_DEFAULT_LOCALE=zh-CN
+      # 启用企业版功能（开发测试用）
+      - N8N_ENTERPRISE_MOCK=true
+
+      # 设置开发环境
+      - NODE_ENV=development
+
+      - N8N_CUSTOM_GRAPHICAL_INTERFACE_CSS=/Users/test/Documents/data_analysis/n8n-chinese/custom.css
+      - NODES_EXCLUDE=[]
+      - NODE_OPTIONS=--max-old-space-size=6144  # <--- 加上这一行 (允许使用 6GB)
+      # 文件访问
+      - N8N_RESTRICT_FILE_ACCESS_TO=/Users/test/Documents/data_analysis
+      - N8N_FILESYSTEM_ALLOW_LIST=/Users/test/Documents/data_analysis:/usr/bin/python3
+      - N8N_FILE_ACCESS_USER_HOME_DISABLED=false
+      # MySQL配置（保留）
+      - MYSQL_HOST=
+      - MYSQL_USER=
+      - MYSQL_PASS=
+      - MYSQL_DB=
+
+      # - N8N_NATIVE_PYTHON_RUNNER=true
+      # - NODE_FUNCTION_ALLOW_BUILTIN=crypto,md5
+      # ========== Python 运行器核心配置 ==========
+      # 1. 必须设为 internal 模式（除非你额外启动一个 n8n-worker-python 容器）
+      # - N8N_CODE_EXECUTION_MODE=internal
+      
+      # 2. 指向系统 Python 路径
+      # - N8N_PYTHON_INTERPRETER=/usr/bin/python3
+      
+      # 3. 必须设为 false！允许 n8n 在启动时自动创建虚拟环境
+      # - N8N_BLOCK_PYTHON_CONTENT_INSTALLATION=false
+
+      # 4. 让 n8n 能够找到你 Dockerfile 里安装的那些 pandas 等库
+      # - PYTHONPATH=/usr/lib/python3.11/site-packages:/usr/local/lib/python3.11/site-packages
+      
+            # - N8N_CODE_EXECUTION_MODE=internal  # 强制外部模式
+      # - N8N_PYTHON_EXECUTABLE_PATH=/usr/bin/python3  # 容器内系统Python路径
+      # - N8N_NATIVE_PYTHON_RUNNER=true
+      # - PYTHONIOENCODING=utf-8  # 编码兼容
+      # - N8N_BLOCK_PYTHON_CONTENT_INSTALLATION=false
+
+
+
+    volumes:
+      # 数据卷（已恢复数据，保留）
+      - ./n8n_data:/home/node/.n8n
+      - ./custom.css:/home/node/custom.css:ro
+      - ../:/data
+      - /Users/test/Documents/data_analysis:/Users/test/Documents/data_analysis:rw
+
+    # 权限配置（适配macOS）
+    # user: "501:20"  # 替换为你的UID/GID（id -u / id -g）
+    # working_dir: /Users/test/Documents/data_analysis

@@ -1,0 +1,979 @@
+{
+  "name": "飞书通用同步",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "app_token"
+            },
+            {
+              "name": "table_id"
+            },
+            {
+              "name": "sql_schema"
+            },
+            {
+              "name": "sql_data"
+            },
+            {
+              "name": "unique_key"
+            },
+            {
+              "name": "view_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        864
+      ],
+      "id": "8187cde6-c752-4d89-b9d7-fdf7bf3a220c",
+      "name": "飞书同步模块"
+    },
+    {
+      "parameters": {
+        "resource": "bitable",
+        "operation": "bitable:table:field:list",
+        "app_toke": "={{ $json.app_token }}",
+        "table_id": "={{ $json.table_id }}",
+        "view_id": "={{ $('飞书同步模块').item.json.view_id }}",
+        "page_size": 100
+      },
+      "type": "n8n-nodes-feishu-lite.feishuNode",
+      "typeVersion": 1,
+      "position": [
+        144,
+        864
+      ],
+      "id": "476287af-38f9-4fdf-aa1e-8dab1b3dbd19",
+      "name": "获取飞书字段列表",
+      "credentials": {
+        "feishuCredentialsApi": {
+          "id": "2e6d3KoLuLPg6phi",
+          "name": "数分agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $('同步参数配置').item.json.sql_schema }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        352,
+        864
+      ],
+      "id": "4e118354-55ec-4d30-9e2a-293088499251",
+      "name": "获取MySQL字段列表",
+      "credentials": {
+        "mySql": {
+          "id": "T0m8TFmF5PgcEvRh",
+          "name": "ods"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 拿到 MySQL 的第一行样例数据及所有列名\nconst mysqlRecord = $('获取MySQL字段列表').first().json;\nconst mysqlFields = Object.keys(mysqlRecord);\n\n// 2. 拿到飞书现有的所有字段名\nconst feishuFields = $('获取飞书字段列表').first().json.data.items.map(f => f.field_name);\n\n// 3. ✨ 核心引擎：智能推断飞书字段类型\nfunction guessFeishuType(value) {\n  if (value === null || value === undefined) return 1; // 空值兜底：建为多行文本 (Type 1)\n  \n  // 判断是否为数字 (并且排除掉像达人UID这种超长数字，长数字依然建为文本防丢失)\n  if (typeof value === 'number') return 2; // 数字 (Type 2)\n  if (typeof value === 'string' && !isNaN(value) && value.trim() !== '' && value.length < 15 && !(value.startsWith('0') && value.length > 1 && !value.includes('.'))) {\n      return 2; \n  }\n  \n  // 判断是否为日期 (匹配 YYYY-MM-DD HH:MM:SS 或 YYYY/MM/DD)\n  if (typeof value === 'string' && /^\\d{4}[-/]\\d{2}[-/]\\d{2}/.test(value)) {\n      return 5; // 日期 (Type 5)\n  }\n  \n  return 1; // 其他所有情况，统统建为多行文本 (Type 1)\n}\n\n// 4. 找出缺失的字段，并附带计算好的类型\nconst missingFields = [];\nfor (const field of mysqlFields) {\n  if (!feishuFields.includes(field)) {\n    missingFields.push({\n      field_name: field,\n      type: guessFeishuType(mysqlRecord[field])\n    });\n  }\n}\n\n// 5. 输出结果保持原有外层结构，方便后面的 If 节点判断 count\nreturn {\n  json: {\n    missingFields: missingFields,\n    count: missingFields.length\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        864
+      ],
+      "id": "275fec7d-c4eb-4e88-93ec-ec33953fa3b5",
+      "name": "字段对比"
+    },
+    {
+      "parameters": {
+        "resource": "bitable",
+        "operation": "bitable:table:field:add",
+        "app_toke": "={{ $('同步参数配置').item.json.app_token }}",
+        "table_id": "={{ $('同步参数配置').item.json.table_id }}",
+        "client_toke": "={{ $generateUuid() }}",
+        "body": "={\"field_name\":\"{{ $json.field_name }}\",\"type\":{{ $json.type }}} "
+      },
+      "type": "n8n-nodes-feishu-lite.feishuNode",
+      "typeVersion": 1,
+      "position": [
+        768,
+        1168
+      ],
+      "id": "3d704bc9-663e-4992-8bca-a613d1e1415c",
+      "name": "新增字段",
+      "credentials": {
+        "feishuCredentialsApi": {
+          "id": "2e6d3KoLuLPg6phi",
+          "name": "数分agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        1312
+      ],
+      "id": "d142ad60-27de-42f6-b8fe-3d743dffefd0",
+      "name": "Wait",
+      "webhookId": "fdd08e3c-0b4d-4560-a36b-9fffef41e887"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "096ea8b7-0121-41fe-9d77-80a47b18d521",
+              "name": "page_token",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "1d07e3eb-4175-45a0-9b9c-5cb02a74a873",
+              "name": "app_token",
+              "value": "={{ $('同步参数配置').item.json.app_token }}",
+              "type": "string"
+            },
+            {
+              "id": "522b42b4-c128-4958-bd95-5e57e3945aaf",
+              "name": "table_id",
+              "value": "={{ $('同步参数配置').item.json.table_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        848
+      ],
+      "id": "cf3d93be-2710-421c-ac38-8b16249cfe9c",
+      "name": "Init Loop"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "62feee33-988a-4cb2-afdc-fb666d2a82c1",
+              "name": "page_token",
+              "value": "={{ $json.data?.page_token || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        832
+      ],
+      "id": "721e1f6a-c572-4a51-be17-ee4d23da5fec",
+      "name": "Update Token"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1616,
+        832
+      ],
+      "id": "711e9efe-95c4-45f5-b2c8-bd6ecc5f6254",
+      "name": "等待0.5秒（避免限流）",
+      "webhookId": "a368e41b-8f3d-4835-857f-48eae5d645fe"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d47de986-b539-4ba1-a5e5-7995ffbb875e",
+              "leftValue": "={{ $json.data?.has_more }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals",
+                "singleValue": false
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1424,
+        848
+      ],
+      "id": "cf21d41a-2c59-4504-9898-8fa1b29301a1",
+      "name": "分页判断"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const allInputItems = $input.all();\n  \n  // 动态获取主键\n  const uniqueKey = $('同步参数配置').first().json.unique_key; \n  if (!uniqueKey) {\n    throw new Error('未获取到唯一键配置');\n  }\n\n  let keyToRecordId = {};\n  const dbRecords = [];\n\n  // 1. ✨ 智能分拣：精准识别你的“飞书数据汇总包”\n  for (const item of allInputItems) {\n    const data = item.json;\n    // 依靠你上一个节点的特征，认出谁是飞书的汇总字典\n    if (data.key_to_record_id) {\n      keyToRecordId = data.key_to_record_id;\n    } else if (!data.feishu_records && !data.message) {\n      // 剩下的、且不是飞书汇总包的，就是真实的数据库记录\n      dbRecords.push(data);\n    }\n  }\n\n  const toCreate = [];\n  const toUpdate = [];\n\n  // 2. 遍历数据库数据进行比对\n  for (const dbRecord of dbRecords) {\n    const primaryKeyValue = dbRecord[uniqueKey];\n\n    if (primaryKeyValue === undefined || primaryKeyValue === null || primaryKeyValue === '') {\n      continue; \n    }\n\n    // 通过你的字典，瞬间找到对应的 record_id\n    const recordId = keyToRecordId[String(primaryKeyValue)];\n    \n    // 过滤空值\n    const cleanFields = {};\n    for (const key of Object.keys(dbRecord)) {\n      const val = dbRecord[key];\n      if (val !== null && val !== undefined && val !== '' && String(val).trim() !== '') {\n        cleanFields[key] = val;\n      }\n    }\n\n    if (Object.keys(cleanFields).length > 0) {\n      if (recordId) {\n        // ✨ 找到了！装入更新篮子，附带 record_id\n        toUpdate.push({\n          record_id: recordId, \n          fields: cleanFields\n        });\n      } else {\n        // 没找到，装入新增篮子\n        toCreate.push({\n          fields: cleanFields\n        });\n      }\n    }\n  }\n\n  return [{ \n    json: {\n      toCreate: toCreate,\n      toUpdate: toUpdate,\n      create_count: toCreate.length,\n      update_count: toUpdate.length,\n      message: `✅ 匹配成功 | 数据库: ${dbRecords.length} | 飞书字典映射: ${Object.keys(keyToRecordId).length} | 待新增: ${toCreate.length} | 待更新: ${toUpdate.length}`\n    } \n  }];\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '对比分类（新增vs更新）' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        864
+      ],
+      "id": "31f2d4a7-44a9-4ef9-9d69-2f2cb0841bfc",
+      "name": "对比分类（新增vs更新）"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const data = $input.first().json;\n  const toUpdate = data.toUpdate || data.to_update || [];\n\n  if (toUpdate.length === 0) {\n    console.log(\"没有需要更新的记录，分支已安全终止。\");\n    return []; \n  }\n\n  // 1. ✨ 核心优化：获取飞书官方字段类型字典 (绝对精准，不靠猜)\n  // 确保这里的节点名称和你的真实节点名称完全一致\n  const schemaItems = $('获取飞书字段列表').first().json.data.items || [];\n  const fieldTypeMap = {};\n  for (const item of schemaItems) {\n    // 飞书的 type 是数字编号，比如 1:多行文本, 2:数字, 5:日期\n    fieldTypeMap[item.field_name] = item.type;\n  }\n\n  // 2. 严格按飞书标准格式化数据\n  const formattedRecords = toUpdate.map(record => {\n    const cleanFields = {};\n    \n    for (const [key, value] of Object.entries(record.fields)) {\n      // 过滤无效空值\n      if (value === null || value === undefined || String(value).trim() === '') {\n        continue; \n      }\n\n      const expectedType = fieldTypeMap[key];\n      let finalValue = value;\n\n      // 3. ✨ 核心转换逻辑：根据飞书要求的类型，对症下药\n      switch (expectedType) {\n        case 1: // 文本类型 (Text)\n          finalValue = String(value);\n          break;\n          \n        case 2: // 数字类型 (Number)\n          finalValue = Number(value);\n          if (isNaN(finalValue)) continue; // 如果转换出 NaN，直接跳过保护飞书\n          break;\n          \n        case 5: // 日期类型 (DateTime) - 飞书的“大坑”\n          // 将各种乱七八糟的 MySQL 时间转成标准的 13 位毫秒时间戳\n          const dateObj = new Date(value);\n          if (!isNaN(dateObj.getTime())) {\n             finalValue = dateObj.getTime(); \n          } else {\n             continue; // 如果日期解析彻底失败，跳过该字段\n          }\n          break;\n          \n        // 如果你有其他特殊类型（比如 7:复选框），可以继续在这里加 case\n        default:\n          finalValue = value; // 没匹配上的兜底保持原样\n      }\n      \n      cleanFields[key] = finalValue;\n    }\n\n    // 组装最终更新记录（必须带 record_id）\n    return {\n      record_id: record.record_id,\n      fields: cleanFields\n    };\n  });\n\n  return [{ json: { records: formattedRecords } }];\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '格式化更新数据' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        640
+      ],
+      "id": "f56fefed-d60a-4301-b50e-785c7795fd61",
+      "name": "格式化更新数据"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const data = $input.first().json;\n  const toUpdate = data.toCreate || data.toCreate || [];\n\n  if (toUpdate.length === 0) {\n    console.log(\"没有需要更新的记录，分支已安全终止。\");\n    return []; \n  }\n\n  // 1. ✨ 核心优化：获取飞书官方字段类型字典 (绝对精准，不靠猜)\n  // 确保这里的节点名称和你的真实节点名称完全一致\n  const schemaItems = $('获取飞书字段列表').first().json.data.items || [];\n  const fieldTypeMap = {};\n  for (const item of schemaItems) {\n    // 飞书的 type 是数字编号，比如 1:多行文本, 2:数字, 5:日期\n    fieldTypeMap[item.field_name] = item.type;\n  }\n\n  // 2. 严格按飞书标准格式化数据\n  const formattedRecords = toUpdate.map(record => {\n    const cleanFields = {};\n    \n    for (const [key, value] of Object.entries(record.fields)) {\n      // 过滤无效空值\n      if (value === null || value === undefined || String(value).trim() === '') {\n        continue; \n      }\n\n      const expectedType = fieldTypeMap[key];\n      let finalValue = value;\n\n      // 3. ✨ 核心转换逻辑：根据飞书要求的类型，对症下药\n      switch (expectedType) {\n        case 1: // 文本类型 (Text)\n          finalValue = String(value);\n          break;\n          \n        case 2: // 数字类型 (Number)\n          finalValue = Number(value);\n          if (isNaN(finalValue)) continue; // 如果转换出 NaN，直接跳过保护飞书\n          break;\n          \n        case 5: // 日期类型 (DateTime) - 飞书的“大坑”\n          // 将各种乱七八糟的 MySQL 时间转成标准的 13 位毫秒时间戳\n          const dateObj = new Date(value);\n          if (!isNaN(dateObj.getTime())) {\n             finalValue = dateObj.getTime(); \n          } else {\n             continue; // 如果日期解析彻底失败，跳过该字段\n          }\n          break;\n          \n        // 如果你有其他特殊类型（比如 7:复选框），可以继续在这里加 case\n        default:\n          finalValue = value; // 没匹配上的兜底保持原样\n      }\n      \n      cleanFields[key] = finalValue;\n    }\n\n    // 组装最终更新记录（必须带 record_id）\n    return {\n      record_id: record.record_id,\n      fields: cleanFields\n    };\n  });\n\n  return [{ json: { records: formattedRecords } }];\n\n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '格式化更新数据' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        1056
+      ],
+      "id": "b296922d-9ca1-4226-a354-d4cbf89d18dd",
+      "name": "格式化创建数据"
+    },
+    {
+      "parameters": {
+        "resource": "bitable",
+        "operation": "bitable:table:record:batchUpdate",
+        "app_toke": "={{ $('同步参数配置').first().json.app_token }}",
+        "table_id": "={{ $('同步参数配置').first().json.table_id }}",
+        "client_toke": "={{ $generateUuid() }}",
+        "body": "={{ JSON.stringify($json) }}"
+      },
+      "type": "n8n-nodes-feishu-lite.feishuNode",
+      "typeVersion": 1,
+      "position": [
+        3536,
+        640
+      ],
+      "id": "e51d36d5-2a61-4cb6-8696-2b8fbce39a74",
+      "name": "批量更新飞书记录",
+      "credentials": {
+        "feishuCredentialsApi": {
+          "id": "2e6d3KoLuLPg6phi",
+          "name": "数分agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "bitable",
+        "operation": "bitable:table:record:batchAdd",
+        "app_toke": "={{ $('同步参数配置').first().json.app_token }}",
+        "table_id": "={{ $('同步参数配置').first().json.table_id }}",
+        "client_toke": "={{ $generateUuid() }}",
+        "body": "={{ JSON.stringify($json) }}"
+      },
+      "type": "n8n-nodes-feishu-lite.feishuNode",
+      "typeVersion": 1,
+      "position": [
+        3536,
+        1056
+      ],
+      "id": "123e4e1c-2a87-43b9-8647-26d51c6b352e",
+      "name": "批量创建飞书记录",
+      "credentials": {
+        "feishuCredentialsApi": {
+          "id": "2e6d3KoLuLPg6phi",
+          "name": "数分agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "bitable",
+        "operation": "bitable:table:record:search",
+        "app_toke": "={{ $('同步参数配置').item.json.app_token }}",
+        "table_id": "={{ $('同步参数配置').item.json.table_id }}",
+        "page_toke": "={{ $json.page_token }}",
+        "page_size": 100,
+        "body": "={\n  \"field_names\": [\"{{ $('同步参数配置').item.json.unique_key }}\"],\n  \"filter\": {\n    \"conjunction\": \"and\",\n    \"conditions\": [\n      {\n        \"field_name\": \"{{ $('同步参数配置').item.json.unique_key }}\",\n        \"operator\": \"isNotEmpty\",\n        \"value\": []\n      }\n    ]\n  }\n}"
+      },
+      "type": "n8n-nodes-feishu-lite.feishuNode",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        848
+      ],
+      "id": "40cd7b95-5e76-409e-93a8-e30b79bd45f8",
+      "name": "飞书多维表查询",
+      "credentials": {
+        "feishuCredentialsApi": {
+          "id": "2e6d3KoLuLPg6phi",
+          "name": "数分agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $('同步参数配置').item.json.sql_data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        2064,
+        848
+      ],
+      "id": "75763eed-1bf8-4fe7-99e3-e546036f0eb9",
+      "name": "数据库数据查询",
+      "credentials": {
+        "mySql": {
+          "id": "T0m8TFmF5PgcEvRh",
+          "name": "ods"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const allFeishuRecords = [];\n  \n  const uniqueKeyName = $('同步参数配置').first().json.unique_key;\n  if (!uniqueKeyName) {\n    throw new Error('未获取到唯一键配置');\n  }\n\n  // ✨ 核心修复：突破 n8n 分页限制，捞取所有循环批次的数据！\n  let runIndex = 0;\n  while (true) {\n    try {\n      // ⚠️ 非常重要：请确保下方的 '飞书多维表查询' 和你的查询节点名字【一字不差】\n      // .all(0, runIndex) 的意思是：获取该节点第 0 个分支，第 runIndex 次运行的数据\n      const itemsOfThisRun = $('飞书多维表查询').all(0, runIndex); \n      \n      if (!itemsOfThisRun || itemsOfThisRun.length === 0) {\n        break; // 如果该页没数据了，说明循环跑完了，退出\n      }\n\n      for (const item of itemsOfThisRun) {\n        if (item.json && item.json.data && item.json.data.items) {\n          const items = item.json.data.items;\n          for (const record of items) {\n            if (record && record.record_id) {\n              const fields = record.fields || {};\n              \n              // 智能剥壳处理\n              let rawValue = fields[uniqueKeyName];\n              let finalKeyValue = null;\n\n              if (rawValue !== undefined && rawValue !== null) {\n                if (Array.isArray(rawValue) && rawValue.length > 0) {\n                  finalKeyValue = rawValue[0].text || rawValue[0].id || rawValue[0].name || String(rawValue[0]);\n                } else if (typeof rawValue === 'object') {\n                  finalKeyValue = rawValue.text || rawValue.id || rawValue.name || String(rawValue);\n                } else {\n                  finalKeyValue = rawValue;\n                }\n              }\n\n              if (finalKeyValue !== undefined && finalKeyValue !== null && String(finalKeyValue).trim() !== '') {\n                allFeishuRecords.push({\n                  record_id: record.record_id,\n                  fields: fields,\n                  primary_key: String(finalKeyValue).trim()\n                });\n              }\n            }\n          }\n        }\n      }\n      runIndex++; // 继续去挖下一页的数据！\n    } catch (e) {\n      break; // 越界报错说明到底了，安全退出\n    }\n  }\n\n  // 构建主键到 record_id 的映射\n  const keyToRecordId = {};\n  for (const record of allFeishuRecords) {\n    if (record.primary_key) {\n      keyToRecordId[record.primary_key] = record.record_id;\n    }\n  }\n\n  return [{ json: { \n    feishu_records: allFeishuRecords,\n    key_to_record_id: keyToRecordId,\n    total_count: allFeishuRecords.length,\n    message: `✅ 突破分页！共挖掘了 ${runIndex} 页数据，提取 ${allFeishuRecords.length} 条记录，映射 ${Object.keys(keyToRecordId).length} 个唯一键。`\n  } }];\n  \n} catch (error) {\n  console.error('节点执行错误:', error);\n  return [{ json: { _error: true, message: error.message || String(error), node: '收集所有飞书记录' } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        1056
+      ],
+      "id": "50923917-4deb-44d7-aba8-ab6a00d3e743",
+      "name": "收集所有飞书表数据"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1786619a-7406-4a20-87cb-ad8c6bcffc47",
+              "name": "app_token",
+              "value": "={{ $json.app_token }}",
+              "type": "string"
+            },
+            {
+              "id": "ec39b1e9-7e6a-416f-b1a5-0a0af2c5d575",
+              "name": "table_id",
+              "value": "={{ $json.table_id }}",
+              "type": "string"
+            },
+            {
+              "id": "1486d2fd-812f-407f-87f5-d2284549f985",
+              "name": "sql_schema",
+              "value": "={{ $json.sql_schema }}",
+              "type": "string"
+            },
+            {
+              "id": "0cc38dac-fa46-4b33-8d02-475c3082624c",
+              "name": "sql_data",
+              "value": "={{ $json.sql_data }}",
+              "type": "string"
+            },
+            {
+              "id": "49dfddbb-1ab2-496a-b659-318a5b5c90ea",
+              "name": "unique_key",
+              "value": "={{ $json.unique_key }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        864
+      ],
+      "id": "c57c795c-f99b-4cf0-9941-0ef959861bf3",
+      "name": "同步参数配置"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3c4c9023-90fb-4c4b-9d48-e50602d7f706",
+              "leftValue": "={{ $json.records.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3024,
+        1056
+      ],
+      "id": "10f390f7-2aef-4658-9b4a-628800bef3b3",
+      "name": "是否需创建记录"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3c4c9023-90fb-4c4b-9d48-e50602d7f706",
+              "leftValue": "={{ $json.records.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3024,
+        640
+      ],
+      "id": "32fdd62d-4a7a-41e9-b110-95c1278cd2ae",
+      "name": "是否需更新记录"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "19bd4f48-5b3e-4f0e-8749-4caad30b6c52",
+              "leftValue": "={{ $json.count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        752,
+        864
+      ],
+      "id": "034125c3-ec8a-402f-af61-fd8496d9ac0f",
+      "name": "是否有新增字段"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "missingFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        768,
+        1024
+      ],
+      "id": "32e07246-8b74-49b5-865c-4af24e8f9638",
+      "name": "拆分字段-单个创建"
+    },
+    {
+      "parameters": {
+        "content": "# 📊 MySQL ➜ 飞书多维表 [通用全量同步 ETL 工作流]\n\n**架构说明**：\n本工作流采用 T+1 级别全量同步架构，支持“表结构自动演进”与“内存级极速比对”。只需在头部传入配置参数（SQL、Token、唯一键），即可自动适配并同步任何业务表。\n\n## 🛠️ 核心执行阶段\n\n### **阶段一：表结构自适应 (Schema Evolution)**\n\n* **参数初始化**：读取并解析目标多维表的 Token、Table ID、查询 SQL 及唯一键。\n* **字段比对**：拉取 MySQL 样例与飞书现有列名进行差集比对。\n* **动态建表**：若发现缺失字段，自动通过引擎推断飞书数据类型（多行文本/数字/日期），自动调用接口新建字段，并执行 `Wait` 等待飞书缓存生效，确保下游无缝衔接。\n* **数据流降维**：code节点传递置空，防止n8n 极其可怕的“隐形乘法器”陷阱。\n\n### **阶段二：双路极速取数 (Data Extraction)**\n\n* **轻量读飞书**：通过 `Init Loop` 分页循环，**仅**拉取多维表旧数据的 `record_id` 与`唯一键`，汇聚为字典映射（Hash Map），将内存占用降至最低。\n* **全量读 MySQL**：执行配置的 SQL 语句，获取全量最新业务数据。\n\n### **阶段三：强同步与高速比对 (Data Diffing)**\n\n* **同步屏障**：利用 `Merge (Append)` 节点确保两路数据完全就绪后再放行。\n* **内存级比对**：通过 Code 节点，以 O(1) 的时间复杂度进行 HashMap 碰撞，将数据瞬间精准切分为 `toCreate` (待新增) 与 `toUpdate` (待更新) 两个集合。\n\n### **阶段四：智能格式化与安全写入 (Format & Load)**\n\n* **强制类型转换**：读取飞书官方 Schema 图纸，拦截并在发送前丢弃未知字段；针对数字类型（防超长精度丢失）与日期类型（自动转13位毫秒时间戳）进行精准转换。\n* **空跑拦截防爆破**：设置 `If` 节点判断数组长度，智能阻断空任务流，彻底消灭飞书 API 的 `1254001` 和 `1254045` 报错。\n* **分块写入**：飞书的批量新增/更新接口有严格限制，官方文档规定单次最多只能传 1000 条。\n* **并发执行**：调用官方批量新增/更新接口，完成最终同步。\n* **统一输出口**：子工作流状态黑盒，优雅的异常处理与闭环。\n\n---\n",
+        "height": 1584,
+        "width": 4352,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -32
+      ],
+      "id": "bdf4469a-a9cd-40aa-88d2-7c2e30601882",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "batchSize": 500,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3296,
+        1040
+      ],
+      "id": "e74107a2-1ac7-4a6a-8c68-9703a60047bc",
+      "name": "分块写入"
+    },
+    {
+      "parameters": {
+        "batchSize": 500,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3296,
+        624
+      ],
+      "id": "87e704b0-513e-468f-b107-9cd065c34d1c",
+      "name": "分批写入"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  // 跨节点提取我们在中间计算好的完美统计量\n  // ⚠️ 注意：这里的名字必须和你实际的对比节点名字一字不差\n  const stats = $('对比分类（新增vs更新）').first().json || {};\n  const config = $('同步参数配置').first().json || {};\n\n  return [{\n    json: {\n      result: \"success\",\n      table_id: config.table_id || \"unknown\",\n      create_count: stats.create_count || 0,\n      update_count: stats.update_count || 0,\n      db_total: stats.total_db_records || 0,\n      feishu_total: stats.feishu_total || 0,\n      message: `✅ 同步完成 | 目标表: ${config.table_id} | 新增: ${stats.create_count || 0} | 更新: ${stats.update_count || 0}`\n    }\n  }];\n} catch (error) {\n  // 就算这里写错，也不影响大局，给个兜底\n  return [{ json: { result: \"success\", message: \"同步完成，但战报生成失败\" } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        880
+      ],
+      "id": "97bdce5d-f729-4621-9146-02b33a1d2dba",
+      "name": "默认输出"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        1312
+      ],
+      "id": "1783bf96-3490-4658-95ad-b4b5a166bca5",
+      "name": "数据流降维"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2336,
+        864
+      ],
+      "id": "f349b4ed-5e98-474f-b797-3acf09ff214f",
+      "name": "合并飞书+数据库"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "飞书同步模块": {
+      "main": [
+        [
+          {
+            "node": "同步参数配置",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取飞书字段列表": {
+      "main": [
+        [
+          {
+            "node": "获取MySQL字段列表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取MySQL字段列表": {
+      "main": [
+        [
+          {
+            "node": "字段对比",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "字段对比": {
+      "main": [
+        [
+          {
+            "node": "是否有新增字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增字段": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "数据流降维",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Loop": {
+      "main": [
+        [
+          {
+            "node": "飞书多维表查询",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "数据库数据查询",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Token": {
+      "main": [
+        [
+          {
+            "node": "飞书多维表查询",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "等待0.5秒（避免限流）": {
+      "main": [
+        [
+          {
+            "node": "Update Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分页判断": {
+      "main": [
+        [
+          {
+            "node": "等待0.5秒（避免限流）",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "收集所有飞书表数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "对比分类（新增vs更新）": {
+      "main": [
+        [
+          {
+            "node": "格式化更新数据",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "格式化创建数据",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式化更新数据": {
+      "main": [
+        [
+          {
+            "node": "是否需更新记录",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式化创建数据": {
+      "main": [
+        [
+          {
+            "node": "是否需创建记录",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "批量更新飞书记录": {
+      "main": [
+        [
+          {
+            "node": "分批写入",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "批量创建飞书记录": {
+      "main": [
+        [
+          {
+            "node": "分块写入",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "飞书多维表查询": {
+      "main": [
+        [
+          {
+            "node": "分页判断",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "数据库数据查询": {
+      "main": [
+        [
+          {
+            "node": "合并飞书+数据库",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "收集所有飞书表数据": {
+      "main": [
+        [
+          {
+            "node": "合并飞书+数据库",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "同步参数配置": {
+      "main": [
+        [
+          {
+            "node": "获取飞书字段列表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否需创建记录": {
+      "main": [
+        [
+          {
+            "node": "分块写入",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否需更新记录": {
+      "main": [
+        [
+          {
+            "node": "分批写入",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否有新增字段": {
+      "main": [
+        [
+          {
+            "node": "Init Loop",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "拆分字段-单个创建",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "拆分字段-单个创建": {
+      "main": [
+        [
+          {
+            "node": "新增字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分块写入": {
+      "main": [
+        [
+          {
+            "node": "默认输出",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "批量创建飞书记录",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分批写入": {
+      "main": [
+        [
+          {
+            "node": "默认输出",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "批量更新飞书记录",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "数据流降维": {
+      "main": [
+        [
+          {
+            "node": "Init Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "合并飞书+数据库": {
+      "main": [
+        [
+          {
+            "node": "对比分类（新增vs更新）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "83c30847-c3f0-4e47-bac6-d12847f1d854",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e051e3c5a0ae543580ba70819ad50e21723e09fa5490e951d2e6147faded65e2"
+  },
+  "id": "5QCeRC9Jid0qgNIJ",
+  "tags": []
+}
