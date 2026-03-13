@@ -8,6 +8,62 @@
 
 ---
 
+```text
+┌────────────────────────────────────────────────────────────────────┐
+│                   Master Workflow (主调度器)                       │
+│                                                                    │
+│  触发方式: 每日凌晨 02:00 或手动触发                                │
+│                                                                    │
+│  ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐  │
+│  │  Switch   │───▶│   Wait    │───▶│    SQL    │───▶│  Notify   │  │
+│  │  （模式）  │    │  (等待)    │    │  (建模)    │    │  (通知)    │  │
+│  └─────┬─────┘    └─────┬─────┘    └─────┬─────┘    └───────────┘  │
+│        │                │                │                          │
+│        ▼                ▼                ▼                          │
+│  ┌───────────┐    ┌───────────┐    ┌───────────┐                   │
+│  │ Sub-WF 1  │    │ Sub-WF 2  │    │ Sub-WF 4  │                   │
+│  │ API采集    │    │ 爬虫采集   │    │ 飞书同步   │                   │
+│  │ (并行)     │    │ (串行)     │    │ (并行)     │                   │
+│  └───────────┘    └───────────┘    └───────────┘                   │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+
+```mermaid
+flowchart TD
+    subgraph MasterWorkflow["Master Workflow（主调度器）"]
+        direction LR
+        trigger["触发方式：每日凌晨 02:00 或手动触发"]
+        Switch["Switch（模式）"]
+        Wait["Wait（等待）"]
+        SQL["SQL（建模）"]
+        Notify["Notify（通知）"]
+        SubWF1["Sub-WF 1<br/>API采集（并行）"]
+        SubWF2["Sub-WF 2<br/>爬虫采集（串行）"]
+        SubWF4["Sub-WF 4<br/>飞书同步（并行）"]
+
+        trigger --> Switch
+        Switch --> Wait
+        Wait --> SQL
+        SQL --> Notify
+
+        Switch --> SubWF1
+        Wait --> SubWF2
+        SQL --> SubWF4
+    end
+
+    style MasterWorkflow fill:#24292e,stroke:#fff,stroke-width:2px,color:#fff
+    style Switch fill:#373e47,stroke:#fff,color:#fff
+    style Wait fill:#373e47,stroke:#fff,color:#fff
+    style SQL fill:#373e47,stroke:#fff,color:#fff
+    style Notify fill:#373e47,stroke:#fff,color:#fff
+    style SubWF1 fill:#373e47,stroke:#fff,color:#fff
+    style SubWF2 fill:#373e47,stroke:#fff,color:#fff
+    style SubWF4 fill:#373e47,stroke:#fff,color:#fff
+```
+
+
+
 ## 🚀 项目概述 (Project Overview)
 
 本项目是一套面向传媒电商业务的全域数据中台解决方案，覆盖 **抖店、小红书、微信视频号、巨量千川、电商罗盘** 五大平台。系统采用 **"Python CLI 脚本 + n8n 工作流引擎"** 的解耦架构：
