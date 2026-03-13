@@ -8,47 +8,6 @@
 
 ---
 
-```mermaid
-flowchart TD
-    %% 定义主容器
-    subgraph MasterWorkflow["Master Workflow (主调度器)"]
-        direction LR  %% 整体从左到右布局
-        %% 顶部说明
-        trigger["触发方式: 每日凌晨 02:00 或手动触发"]
-        
-        %% 主流程节点
-        Switch["Switch（模式）"]
-        Wait["Wait (等待)"]
-        SQL["SQL (建模)"]
-        Notify["Notify (通知)"]
-        
-        %% 子流程节点
-        SubWF1["Sub-WF 1<br/>API采集 (并行)"]
-        SubWF2["Sub-WF 2<br/>爬虫采集 (串行)"]
-        SubWF4["Sub-WF 4<br/>飞书同步 (并行)"]
-        
-        %% 流程连线
-        trigger --> Switch
-        Switch --> Wait
-        Wait --> SQL
-        SQL --> Notify
-        
-        %% 子流程分支
-        Switch --> SubWF1
-        Wait --> SubWF2
-        SQL --> SubWF4
-    end
-    
-    %% 样式美化（可选，删了也不影响流程）
-    style MasterWorkflow fill:#f5f5f5,stroke:#333,stroke-width:2px
-    style Switch fill:#e1f5fe,stroke:#0288d1
-    style Wait fill:#f3e5f5,stroke:#8e24aa
-    style SQL fill:#e8f5e8,stroke:#2e7d32
-    style Notify fill:#fff3e0,stroke:#f57c00
-```
-
-
-
 ## 🚀 项目概述 (Project Overview)
 
 本项目是一套面向传媒电商业务的全域数据中台解决方案，覆盖 **抖店、小红书、微信视频号、巨量千川、电商罗盘** 五大平台。系统采用 **"Python CLI 脚本 + n8n 工作流引擎"** 的解耦架构：
@@ -128,53 +87,64 @@ flowchart TD
 
 ### 架构设计
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                     飞书机器人 (Webhook 触发)                     │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ 用户提问
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    AI Agent (LangChain + Qwen)                   │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │ System      │  │ Text-to-SQL │  │ Memory      │             │
-│  │ Prompt      │  │ Generator   │  │ Buffer      │             │
-│  │ (DDL Schema)│  │             │  │ (多轮对话)   │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ 生成的 SQL
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     MySQL Tool (执行查询)                        │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │ dwd_电商数据_宽表 │  │ dwd_千川素材h   │  │ ads_直播素材_m  │ │
-│  │ (全渠道订单)     │  │ (投放素材)       │  │ (直播分钟数据)  │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ 查询结果
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    智能输出处理 (Code Node)                       │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │ 文本分析    │  │ 图表 JSON   │  │ Excel 数据  │             │
-│  │ (Markdown)  │  │ (QuickChart)│  │ (表格组件)  │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ 推送结果
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     飞书消息卡片 (交互式推送)                     │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ 📊 智能数据中台洞察                                          ││
-│  │ ─────────────────────────────────────────────────────────── ││
-│  │ 【分析结论】                                                 ││
-│  │ 本月抖店GMV为 xxx 万元，环比增长 xx%...                      ││
-│  │ ─────────────────────────────────────────────────────────── ││
-│  │ [图表图片]                                                   ││
-│  │ ─────────────────────────────────────────────────────────── ││
-│  │ [数据明细表格] (支持翻页)                                    ││
-│  └─────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    %% 定义各层级容器与节点
+    subgraph FeishuBot["飞书机器人 (Webhook 触发)"]
+        direction LR
+        trigger_msg["用户提问"]
+    end
+    
+    subgraph AIAgent["AI Agent (LangChain + Qwen)"]
+        direction LR
+        SystemPrompt["System Prompt<br/>(DDL Schema)"]
+        Text2SQL["Text-to-SQL Generator"]
+        MemoryBuffer["Memory Buffer<br/>(多轮对话)"]
+    end
+    
+    subgraph MySQLTool["MySQL Tool (执行查询)"]
+        direction LR
+        Table1["dwd_电商数据_宽表<br/>(全渠道订单)"]
+        Table2["dwd_千川素材h<br/>(投放素材)"]
+        Table3["ads_直播素材_m<br/>(直播分钟数据)"]
+    end
+    
+    subgraph OutputProcess["智能输出处理 (Code Node)"]
+        direction LR
+        TextAnalysis["文本分析<br/>(Markdown)"]
+        ChartJSON["图表 JSON<br/>(QuickChart)"]
+        ExcelData["Excel 数据<br/>(表格组件)"]
+    end
+    
+    subgraph FeishuCard["飞书消息卡片 (交互式推送)"]
+        direction LR
+        CardContent["📊 智能数据中台洞察<br/>【分析结论】本月抖店GMV为 xxx 万元...<br/>[图表图片]<br/>[数据明细表格] (支持翻页)"]
+    end
+    
+    %% 流程连线
+    FeishuBot --> trigger_msg --> AIAgent
+    AIAgent --> Text2SQL --> MySQLTool
+    MySQLTool --> Table1 & Table2 & Table3 --> OutputProcess
+    OutputProcess --> TextAnalysis & ChartJSON & ExcelData --> FeishuCard
+    
+    %% 样式美化（和你之前的配色逻辑一致）
+    style FeishuBot fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style AIAgent fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style MySQLTool fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    style OutputProcess fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px
+    style FeishuCard fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    
+    %% 节点内部样式
+    style SystemPrompt fill:#f0f8ff,stroke:#0288d1
+    style Text2SQL fill:#f0f8ff,stroke:#0288d1
+    style MemoryBuffer fill:#f0f8ff,stroke:#0288d1
+    style Table1 fill:#f9fff9,stroke:#2e7d32
+    style Table2 fill:#f9fff9,stroke:#2e7d32
+    style Table3 fill:#f9fff9,stroke:#2e7d32
+    style TextAnalysis fill:#fef0f8,stroke:#8e24aa
+    style ChartJSON fill:#fef0f8,stroke:#8e24aa
+    style ExcelData fill:#fef0f8,stroke:#8e24aa
+    style CardContent fill:#fff8f0,stroke:#f57c00
 ```
 
 ### 核心能力
@@ -614,7 +584,7 @@ quick_sync_mysql_to_feishu(
 
 本项目采用 **1 个主工作流 + 4 个子工作流** 的 Master-Sub 架构，解决传统 Cron 绝对时间调度带来的资源竞争问题：
 
-```text
+```
 ┌────────────────────────────────────────────────────────────┐
 │                   Master Workflow (主调度器)                │
 │                                                            │
@@ -633,6 +603,45 @@ quick_sync_mysql_to_feishu(
 │  └─────────┘    └─────────┘    └─────────┘               │
 └────────────────────────────────────────────────────────────┘
 ```
+```mermaid
+flowchart TD
+    %% 定义主容器
+    subgraph MasterWorkflow["Master Workflow (主调度器)"]
+        direction LR  %% 整体从左到右布局
+        %% 顶部说明
+        trigger["触发方式: 每日凌晨 02:00 或手动触发"]
+        
+        %% 主流程节点
+        Switch["Switch（模式）"]
+        Wait["Wait (等待)"]
+        SQL["SQL (建模)"]
+        Notify["Notify (通知)"]
+        
+        %% 子流程节点
+        SubWF1["Sub-WF 1<br/>API采集 (并行)"]
+        SubWF2["Sub-WF 2<br/>爬虫采集 (串行)"]
+        SubWF4["Sub-WF 4<br/>飞书同步 (并行)"]
+        
+        %% 流程连线
+        trigger --> Switch
+        Switch --> Wait
+        Wait --> SQL
+        SQL --> Notify
+        
+        %% 子流程分支
+        Switch --> SubWF1
+        Wait --> SubWF2
+        SQL --> SubWF4
+    end
+    
+    %% 样式美化（可选，删了也不影响流程）
+    style MasterWorkflow fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style Switch fill:#e1f5fe,stroke:#0288d1
+    style Wait fill:#f3e5f5,stroke:#8e24aa
+    style SQL fill:#e8f5e8,stroke:#2e7d32
+    style Notify fill:#fff3e0,stroke:#f57c00
+```
+
     
 > 💡 **建议在此处插入一张 n8n 主工作流调度图**：`![n8n 主工作流调度图](docs/images/master_workflow.png)`
 
