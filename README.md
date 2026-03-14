@@ -937,6 +937,9 @@ ${metadataDictRows.map(row =>
 
 本项目采用 **1 个主工作流 + 4 个子工作流** 的 Master-Sub 架构，解决传统 Cron 绝对时间调度带来的资源竞争问题：
 
+> 💡 **n8n 主工作流调度图**：
+![n8n 主工作流调度图](docs/images/master_workflow.png)
+
 ```mermaid
 flowchart TD
     %% 定义主容器
@@ -975,10 +978,6 @@ flowchart TD
     style SQL fill:#e8f5e8,stroke:#2e7d32
     style Notify fill:#fff3e0,stroke:#f57c00
 ```
-
-    
-> 💡 **建议在此处插入一张 n8n 主工作流调度图**：
-![n8n 主工作流调度图](docs/images/master_workflow.png)
 
 ### 子工作流详解
 
