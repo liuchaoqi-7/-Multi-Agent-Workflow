@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS dwd.dwd_抖店_宽表(
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '唯一标识每行数据',
-  店铺ID CHAR(64) COMMENT '店铺ID',
+  店铺ID CHAR(64) COMMENT '店铺ID', 
   主订单ID CHAR(64) COMMENT '主订单ID（抖店=根订单ID/微信/小红书=订单ID）',
   子订单ID CHAR(64) COMMENT '子订单ID（无则为空）',
   售后单号 CHAR(255) COMMENT '售后单号',
