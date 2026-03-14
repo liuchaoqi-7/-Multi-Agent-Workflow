@@ -3,7 +3,7 @@
 """
 达人维度表同步 - MySQL -> 飞书
 
-MySQL表：dim.dim_达人维度
+MySQL表：dim.dim_达人维度 
 飞书表：tbljS1RFr11jJBTU
 主键：达人UID
 """
