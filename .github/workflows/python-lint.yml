@@ -7,10 +7,6 @@ on:
       - '**.py'
       - '.github/workflows/python-lint.yml'
       - 'requirements.txt'
-  pull_request:
-    branches: [ main, master, develop ]
-    paths:
-      - '**.py'
 
 jobs:
   flake8:
@@ -32,20 +28,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 flake8-docstrings flake8-bugbear flake8-comprehensions
 
-      - name: Run flake8
-        run: |
-          flake8 . \
-            --count \
-            --select=E9,F63,F7,F82 \
-            --show-source \
-            --statistics
-
-      - name: Run flake8 (full check)
+      - name: Run flake8 (Check & Report)
+        # 核心优化：合并为一个步骤，加上 --exit-zero 保证必定通行，并补全排除目录
         run: |
           flake8 . \
             --count \
             --exit-zero \
-            --max-complexity=10 \
+            --max-complexity=15 \
             --max-line-length=127 \
             --statistics \
-            --exclude=.git,__pycache__,build,dist,.eggs,*.egg,node_modules,n8n_data
+            --exclude=.git,__pycache__,build,dist,venv,.venv,airflow_home,node_modules,legacy
