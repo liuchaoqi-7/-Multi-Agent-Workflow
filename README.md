@@ -27,7 +27,7 @@
 - 分钟级/日级自动化调度，支持增量/全量同步
 - 飞书多维表双向同步（MySQL ↔ 飞书）
 - 素材智能诊断（Whisper ASR + 千问大模型）
-- **🤖 智能数据分析 Agent（Text-to-SQL + 自动可视化）**
+- **🤖 多智能体协作架构（Supervisor Agent 路由分发 + 专业 Agent 协作 + Text-to-SQL + 自动可视化）**
 - **🏛️ 企业级数据治理（元数据管理 + 数据字典）**
 
 ---
@@ -78,9 +78,13 @@
 
 | 能力 | 说明 |
 |------|------|
+| **多智能体协作** | Supervisor Agent 路由分发 + 专业 Agent 协作处理 |
+| **智能路由分发** | 自动判断任务类型，路由到数据分析分支或直接回复分支 |
 | **Text-to-SQL** | 用户用自然语言提问，AI 自动生成 SQL 查询语句 |
 | **多轮对话记忆** | 基于 LangChain Memory Buffer，支持上下文关联追问 |
 | **智能图表生成** | 自动识别数据特征，生成可视化图表（QuickChart API） |
+| **报告增强** | 自动打磨分析报告，生成结构化洞察和建议 |
+| **QA 质检** | 统一输出质量，修复 Markdown 可读性，确保飞书兼容 |
 | **飞书交互卡片** | 推送包含分析结论 + 图表 + 数据表格的交互式消息 |
 | **错误自动告警** | 工作流异常时自动推送飞书告警消息 |
 
@@ -91,115 +95,165 @@
 
 ---
 
-## 🤖 智能数据分析 Agent (AI Data Analysis Agent)
+## 🤖 智能数据分析 Agent (Multi-Agent Data Analysis System)
 
 ### 核心亮点
 
-本项目集成了一个基于 **n8n + LangChain + 千问大模型** 的智能数据分析 Agent，实现 **自然语言 → SQL → 可视化图表** 的全链路自动化：
+本项目实现了一套 **多智能体协作架构**（Multi-Agent Architecture），基于 **n8n + LangChain + 千问大模型**，通过 **Supervisor Agent 路由分发** 实现任务智能分流：
 
 ```
-用户提问（飞书）→ AI Agent（Text-to-SQL）→ MySQL 查询 → 自动生成图表 → 飞书推送结果
+用户提问（飞书）→ Supervisor Agent（路由分发）→ 专业 Agent 协作处理 → 飞书推送结果
 ```
 
 > 💡 **建议在此处插入一张数据分析 Agent 工作流截图**：`![数据分析Agent工作流](docs/images/data_analysis_agent.png)`
 
-### 架构设计
+### 多智能体架构设计
 
 ```mermaid
-flowchart TD
-    %% 整体纵向布局
+flowchart TB
     direction TB
-    linkStyle default stroke:#666,stroke-width:1.5px
 
-    %% 1. 飞书机器人 (Webhook 触发)
-    subgraph WebhookFeishu["飞书机器人 (Webhook 触发)"]
-        direction LR
-        FeishuTrigger["用户提问"]
-        %% 强制居中
-        FeishuTrigger:::center-node
+    %% 1. 飞书机器人
+    subgraph FeishuBot["飞书机器人 (Webhook 触发)"]
     end
 
-    %% 2. AI Agent (LangChain + Qwen)
-    subgraph AIAgent["AI Agent (LangChain + Qwen)"]
-        direction LR
-        System["System Prompt<br/>(DDL Schema)"]:::center-node
-        Text2SQL["Text-to-SQL Generator"]:::center-node
-        Memory["Memory Buffer<br/>(多轮对话)"]:::center-node
-        
-        %% 水平等距排列（关键：空节点占位实现居中）
-        System --- Text2SQL --- Memory
+    %% 2. 任务预处理
+    subgraph Preprocess["任务预处理 (Code Node)
+解析飞书消息、提取用户文本、生成 TraceID"]
     end
 
-    %% 3. MySQL Tool (执行查询)
-    subgraph MySQLTool["MySQL Tool (执行查询)"]
+    %% 3. 路由分发Agent
+    subgraph Supervisor["🎯 Supervisor Agent (路由分发)"]
         direction LR
-        Table1["dwd_电商数据_宽表<br/>(全渠道订单)"]:::center-node
-        Table2["dwd_千川素材h<br/>(投放素材)"]:::center-node
-        Table3["ads_直播素材_m<br/>(直播分钟数据)"]:::center-node
-        
-        %% 水平等距排列
-        Table1 --- Table2 --- Table3
+        RouteInfo["职责：任务拆解与路由，不直接进行 SQL 查询
+输出：{ route: 'sql_analysis' | 'direct_reply',
+       reason: '路由原因',
+       needChart: true,
+       sqlFocus: '查询重点' }"]
     end
 
-    %% 4. 智能输出处理 (Code Node)
-    subgraph OutputProcess["智能输出处理 (Code Node)"]
-        direction LR
-        TextAnalyze["文本分析<br/>(Markdown)"]:::center-node
-        ChartJson["图表 JSON<br/>(QuickChart)"]:::center-node
-        ExcelData["Excel 数据<br/>(表格组件)"]:::center-node
-        
-        %% 水平等距排列
-        TextAnalyze --- ChartJson --- ExcelData
+    %% 4. 任务路由Switch
+    subgraph SwitchNode["任务路由 (Switch Node)
+根据 route 字段分发到不同分支"]
     end
 
-    %% 5. 飞书消息卡片 (交互式推送)
-    subgraph FeishuCard["飞书消息卡片 (交互式推送)"]
+    %% 5. 数据分析分支
+    subgraph SQLBranch["📊 数据分析分支"]
+        direction TB
+        SQLAgent["SQL Agent (Text-to-SQL)"]
+        MySQL["MySQL Tool (执行查询)"]
+        ReportAgent["报告增强 Agent (打磨报告)"]
+        QAAgent["QA Agent (质量检查)"]
+    end
+
+    %% 6. 直接回复分支
+    subgraph DirectBranch["💬 直接回复分支"]
+        direction TB
+        DirectAgent["Direct Reply Agent"]
+        DirectTip["处理寒暄、解释流程
+非数据问题、权限外"]
+    end
+
+    %% 7. 智能输出处理
+    subgraph Output["智能输出处理 (Code Node)"]
+        direction LR
+        Text["文本分析 (Markdown)"]
+        Chart["图表 JSON (QuickChart)"]
+        Excel["Excel 数据 (表格组件)"]
+    end
+
+    %% 8. 飞书消息卡片
+    subgraph Card["飞书消息卡片 (交互式推送)"]
         direction LR
         CardContent["📊 智能数据中台洞察
-┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+────────────────────
 【分析结论】
 本月抖店GMV为 xxx 万元，环比增长 xx%...
-┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+────────────────────
 [图表图片]
-┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-[数据明细表格] (支持翻页)"]:::center-node
+────────────────────
+[数据明细表格] (支持翻页)"]
     end
 
-    %% 主流程连线（纵向居中）
-    WebhookFeishu -.->|用户提问| AIAgent
-    AIAgent -.->|生成的 SQL| MySQLTool
-    MySQLTool -.->|查询结果| OutputProcess
-    OutputProcess -.->|推送结果| FeishuCard
+    %% 流程连线
+    FeishuBot -->|用户提问| Preprocess
+    Preprocess --> Supervisor
+    Supervisor --> SwitchNode
 
-    %% 样式定义（沿用你的配色体系）
-    classDef center-node text-align:center, padding:8px, margin:0 auto;
-    style WebhookFeishu fill:#f5f5f5,stroke:#333,stroke-width:2px, text-align:center;
-    style AIAgent fill:#e1f5fe,stroke:#0288d1,stroke-width:2px, text-align:center;
-    style MySQLTool fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px, text-align:center;
-    style OutputProcess fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px, text-align:center;
-    style FeishuCard fill:#fff3e0,stroke:#f57c00,stroke-width:2px, text-align:center;
+    SwitchNode -->|route=sql_analysis| SQLBranch
+    SwitchNode -->|route=direct_reply| DirectBranch
 
-    %% 内部模块样式
-    style System fill:#ffffff,stroke:#555,rounded:10px;
-    style Text2SQL fill:#ffffff,stroke:#555,rounded:10px;
-    style Memory fill:#ffffff,stroke:#555,rounded:10px;
-    style Table1 fill:#ffffff,stroke:#555,rounded:10px;
-    style Table2 fill:#ffffff,stroke:#555,rounded:10px;
-    style Table3 fill:#ffffff,stroke:#555,rounded:10px;
-    style TextAnalyze fill:#ffffff,stroke:#555,rounded:10px;
-    style ChartJson fill:#ffffff,stroke:#555,rounded:10px;
-    style ExcelData fill:#ffffff,stroke:#555,rounded:10px;
-    style CardContent fill:#ffffff,stroke:#555,rounded:10px, width:400px;
-    style FeishuTrigger fill:#ffffff,stroke:#555,rounded:10px;
+    SQLBranch --> Output
+    DirectBranch --> Output
+
+    Output --> Card
+
+    %% 数据分析分支内部流程
+    SQLAgent --> MySQL
+    MySQL --> ReportAgent
+    ReportAgent --> QAAgent
+
+    %% 样式（和你整套完全统一）
+    style FeishuBot fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style Preprocess fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style Supervisor fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style SwitchNode fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px
+    style SQLBranch fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    style DirectBranch fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style Output fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px
+    style Card fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+
+    style RouteInfo fill:#fff,stroke:#555
+    style SQLAgent fill:#fff,stroke:#555
+    style MySQL fill:#fff,stroke:#555
+    style ReportAgent fill:#fff,stroke:#555
+    style QAAgent fill:#fff,stroke:#555
+    style DirectAgent fill:#fff,stroke:#555
+    style DirectTip fill:#fff,stroke:#555
+    style Text fill:#fff,stroke:#555
+    style Chart fill:#fff,stroke:#555
+    style Excel fill:#fff,stroke:#555
+    style CardContent fill:#fff,stroke:#555
+```
+
+### 四大核心 Agent 职责
+
+| Agent | 职责 | 输入 | 输出 |
+|-------|------|------|------|
+| **🎯 Supervisor Agent** | 任务拆解与路由分发 | 用户问题 | `{ route, reason, needChart, sqlFocus }` |
+| **📊 SQL Agent** | Text-to-SQL 生成与执行 | 用户问题 + 路由计划 | SQL 查询结果 + 分析初稿 |
+| **📝 报告增强 Agent** | 打磨分析报告 | 分析初稿 | 结构化报告（结论+洞察+建议+图表配置） |
+| **✅ QA Agent** | 统一输出质量 | 增强后报告 | 修复后的 Markdown + 图表 JSON + Excel 数据 |
+| **💬 Direct Reply Agent** | 处理非数据问题 | 用户问题 | 直接回复文本 |
+
+### 路由策略
+
+```javascript
+// Supervisor Agent 路由规则
+{
+  "route": "sql_analysis | direct_reply",
+  "reason": "路由原因",
+  "needChart": true,
+  "needExcel": false,
+  "sqlFocus": "查询重点"
+}
+
+// 路由策略：
+// 1. 需要查数据库/统计/趋势/对比/ROI/GMV 等分析任务 -> sql_analysis
+// 2. 寒暄、解释流程、非数据问题、权限外问题 -> direct_reply
+// 3. 用户意图不清晰但明显偏数据分析 -> 优先 sql_analysis
 ```
 
 ### 核心能力
 
 | 能力 | 说明 |
 |------|------|
+| **多智能体协作** | Supervisor Agent 路由分发 + 专业 Agent 协作处理 |
+| **智能路由分发** | 自动判断任务类型，路由到数据分析分支或直接回复分支 |
 | **Text-to-SQL** | 用户用自然语言提问，AI 自动生成 SQL 查询语句 |
-| **多轮对话记忆** | 基于 LangChain Memory Buffer 实现上下文记忆 |
 | **DDL Schema 注入** | 将数据库表结构注入 System Prompt，确保 SQL 准确性 |
+| **报告增强** | 自动打磨分析报告，生成结构化洞察和建议 |
+| **QA 质检** | 统一输出质量，修复 Markdown 可读性，确保飞书兼容 |
 | **自动可视化** | 智能判断是否需要生成图表，调用 QuickChart API |
 | **飞书交互卡片** | 支持 Markdown、图片、表格组件的富文本推送 |
 | **错误兜底** | 异常时自动推送告警消息到飞书群 |
@@ -218,7 +272,16 @@ flowchart TD
 > "帮我分析一下本月抖店的GMV，按达人分组，取前10名"
 
 **AI Agent 自动处理流程**：
-1. 解析用户意图，识别时间范围（本月）、平台（抖店）、指标（GMV）
+1. **Supervisor Agent** 分析意图，输出路由计划：
+```json
+{
+  "route": "sql_analysis",
+  "reason": "需要查询数据库统计GMV",
+  "needChart": true,
+  "sqlFocus": "抖店本月GMV按达人分组TOP10"
+}
+```
+
 2. 生成 SQL 查询语句：
 ```sql
 SELECT 
@@ -232,25 +295,83 @@ GROUP BY `达人名称`
 ORDER BY GMV DESC
 LIMIT 10
 ```
-3. 执行查询并分析结果
-4. 自动生成柱状图（通过 QuickChart API）
+3. **报告增强 Agent** 打磨分析报告：
+```markdown
+## 📊 本月抖店 GMV TOP10 达人分析
+
+### 一句话结论
+本月抖店 GMV 集中度较高，TOP10 达人贡献了 xx% 的总 GMV...
+
+### 核心指标总览
+| 排名 | 达人名称 | GMV(万元) | 占比 |
+|------|----------|-----------|------|
+| 1 | xxx | 123.45 | 15.2% |
+| ... | ... | ... | ... |
+
+### 关键洞察
+1. 头部达人效应明显...
+2. 增长趋势分析...
+3. 异常波动提示...
+
+### 可执行建议
+1. 优先级1：...
+2. 优先级2：...
+```
+
+4. **QA Agent** 质量检查，修复格式问题
+
 5. 推送飞书消息卡片（包含分析结论 + 图表 + 数据表格）
 
 ### 技术实现
 
 ```javascript
-// n8n AI Agent 节点配置
+// n8n Supervisor Agent 节点配置
 {
   "type": "@n8n/n8n-nodes-langchain.agent",
   "parameters": {
     "promptType": "define",
-    "text": "={{ JSON.parse($json.body.event.message.content).text }}",
+    "text": "={{ $json.userText }}",
     "options": {
-      "systemMessage": "你是一个资深电商数据中台专家...",
-      "enableStreaming": true
+      "systemMessage": "=# Role\n你是 Supervisor Agent，只负责任务拆解与路由，不直接进行 SQL 查询。\n\n# Output Rule\n你必须只输出一个 JSON 对象：\n{\n  \"route\": \"sql_analysis 或 direct_reply\",\n  \"reason\": \"一句话说明路由原因\",\n  \"needChart\": true,\n  \"sqlFocus\": \"查询重点\"\n}"
     }
   }
 }
+
+// n8n Switch 节点配置（任务路由）
+{
+  "type": "n8n-nodes-base.switch",
+  "parameters": {
+    "rules": {
+      "values": [
+        {
+          "conditions": {
+            "conditions": [
+              {
+                "leftValue": "={{ $json.routePlan.route }}",
+                "rightValue": "sql_analysis",
+                "operator": { "type": "string", "operation": "equals" }
+              }
+            ]
+          },
+          "outputKey": "数据分析分支"
+        },
+        {
+          "conditions": {
+            "conditions": [
+              {
+                "leftValue": "={{ $json.routePlan.route }}",
+                "rightValue": "direct_reply",
+                "operator": { "type": "string", "operation": "equals" }
+              }
+            ]
+          },
+          "outputKey": "直接回复分支"
+        }
+      ]
+    }
+  }
+}
+```
 
 // MySQL Tool 节点配置
 {
@@ -929,24 +1050,28 @@ done
 | `商品维度同步` | `n8n-nodes-base.executeCommand` | `python mysql_syn_feishu/sync_order_product.py` | MySQL→飞书 | 并行 |
 | `达人榜单同步` | `n8n-nodes-base.executeCommand` | `python mysql_syn_feishu/sync_rank_kol.py` | MySQL→飞书 | 并行 |
 
-#### 数据分析 Agent 节点映射
+#### 数据分析 Agent 节点映射（多智能体架构）
 
 | 节点名称 | 节点类型 | 功能说明 | 关键配置 |
 |----------|----------|----------|----------|
 | `Webhook` | `n8n-nodes-base.webhook` | 飞书机器人入口 | `httpMethod: POST, path: feishu-bot` |
-| `If` | `n8n-nodes-base.if` | URL验证判断 | `conditions: type == url_verification` |
-| `Respond to Webhook` | `n8n-nodes-base.respondToWebhook` | 返回challenge | `responseBody: {challenge}` |
-| `AI Agent` | `@n8n/n8n-nodes-langchain.agent` | LangChain Agent | `systemMessage: DDL Schema...` |
-| `OpenAI Chat Model` | `@n8n/n8n-nodes-langchain.lmChatOpenAi` | 千问大模型 | `model: qwen-plus` |
-| `Simple Memory` | `@n8n/n8n-nodes-langchain.memoryBufferWindow` | 多轮对话记忆 | `sessionKey: chat_id` |
-| `Execute a SQL query` | `n8n-nodes-base.mySqlTool` | MySQL查询工具 | `query: {{ $fromAI('sql') }}` |
-| `分离文本和图表` | `n8n-nodes-base.code` | 解析AI输出 | 提取 Markdown/JSON/Excel |
+| `任务预处理` | `n8n-nodes-base.code` | 解析飞书消息、提取文本 | 提取 userText、chatId、traceId |
+| `Supervisor Agent` | `@n8n/n8n-nodes-langchain.agent` | 🎯 路由分发 Agent | 输出 `{ route, reason, needChart, sqlFocus }` |
+| `解析路由结果` | `n8n-nodes-base.code` | 解析 Supervisor 输出 | 默认进入数据分析分支 |
+| `任务路由` | `n8n-nodes-base.switch` | 根据 route 分发任务 | `sql_analysis` / `direct_reply` |
+| `SQL Agent` | `@n8n/n8n-nodes-langchain.agent` | 📊 Text-to-SQL Agent | DDL Schema 注入 + MySQL Tool |
+| `MySQL Tool` | `n8n-nodes-base.mySqlTool` | 执行 SQL 查询 | `query: {{ $fromAI('sql') }}` |
+| `报告增强 Agent` | `@n8n/n8n-nodes-langchain.agent` | 📝 打磨分析报告 | 输出结构化洞察 + 图表配置 |
+| `QA Agent` | `@n8n/n8n-nodes-langchain.agent` | ✅ 质量检查 Agent | 修复 Markdown + 图表 JSON |
+| `Direct Reply Agent` | `@n8n/n8n-nodes-langchain.agent` | 💬 直接回复 Agent | 处理寒暄、非数据问题 |
+| `分离文本和图表` | `n8n-nodes-base.code` | 解析 AI 输出 | 提取 Markdown/JSON/Excel |
 | `图片生成判断` | `n8n-nodes-base.if` | 判断是否需要生成图表 | `hasChart == true` |
-| `生成图片` | `n8n-nodes-base.httpRequest` | 调用QuickChart API | `url: https://quickchart.io/chart` |
+| `生成图片` | `n8n-nodes-base.httpRequest` | 调用 QuickChart API | `url: https://quickchart.io/chart` |
 | `上传图片` | `n8n-nodes-base.httpRequest` | 上传图片到飞书 | `url: https://open.feishu.cn/open-apis/im/v1/images` |
 | `飞书推送数据分析结果` | `n8n-nodes-feishu-lite.feishuNode` | 推送消息卡片 | `msg_type: interactive` |
 | `错误兜底` | `n8n-nodes-base.errorTrigger` | 错误触发器 | - |
 | `飞书推送错误信息` | `n8n-nodes-feishu-lite.feishuNode` | 推送告警卡片 | `template: red` |
+
 
 ### 执行时间规划
 
@@ -1206,7 +1331,7 @@ python main.py --max_workers 20
 - ✨ 新增飞书同步模块
 - ✨ 优化爬虫签名服务
 - ✨ 新增素材智能诊断（Whisper + Qwen）
-- ✨ **新增智能数据分析 Agent（Text-to-SQL + 自动可视化）**
+- ✨ **新增多智能体协作架构（Supervisor Agent 路由分发 + 专业 Agent 协作）**
 - ✨ **新增企业级数据治理（元数据管理 + 数据字典）**
 
 ### v1.0.0
