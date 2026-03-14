@@ -991,8 +991,10 @@ flowchart TD
 | 微信订单采集 | `python API_data_collect/order_W/main.py` | 7200s | 并行 |
 | 千川素材采集 | `python API_data_collect/qc_material/main.py` | 3600s | 并行 |
 
-> 💡 **建议在此处插入一张 API 采集子工作流截图**：`![API采集子工作流](docs/images/api_workflow.png)`
-
+> 💡 **API 采集子工作流截图**：
+![微信API采集子工作流](docs/images/sub-workflow_WEIXIN.png)
+![千川API采集子工作流](docs/images/sub-workflow_qc.png)
+![飞书同步逻辑子工作流](docs/images/sub-workflow_SYNCfeishu.png)
 #### Sub-Workflow 2: 爬虫数据采集
 
 | 节点 | 命令 | 超时 | 执行策略 |
