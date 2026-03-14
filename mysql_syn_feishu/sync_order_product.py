@@ -4,7 +4,7 @@
 商品维度表同步 - MySQL -> 飞书
 
 MySQL表：dim.dim_商品纬度
-飞书表：tble0SWNIt1EnBkv
+飞书表：tble0SWNIt1EnBkv 
 主键：商品ID
 """
 
