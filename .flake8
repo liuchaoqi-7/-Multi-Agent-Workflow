@@ -1,0 +1,38 @@
+[flake8]
+max-line-length = 127
+max-complexity = 10
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    .eggs,
+    *.egg,
+    node_modules,
+    n8n_data,
+    venv,
+    .venv,
+    env,
+    airflow_home,
+    web_crawler/JS_abogus
+ignore = 
+    E203,
+    W503,
+    D100,
+    D101,
+    D102,
+    D103,
+    D104,
+    D105,
+    D107,
+    D200,
+    D201,
+    D202,
+    D205,
+    D400,
+    D401,
+    DAR101,
+    DAR201,
+    DAR401
+per-file-ignores =
+    */__init__.py: F401
