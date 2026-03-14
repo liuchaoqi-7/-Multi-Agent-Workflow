@@ -1,8 +1,14 @@
 # 电商全域数据中台 & n8n 自动化分析系统 (Data-Agent Hub)
 
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
-[![n8n](https://img.shields.io/badge/n8n-Workflow%20Automation-orange)](https://n8n.io/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![n8n](https://img.shields.io/badge/n8n-Workflow%20Automation-EA4B71.svg?logo=n8n&logoColor=white)](https://n8n.io/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1.svg?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Feishu](https://img.shields.io/badge/Feishu-Open_API-00D6B9.svg?logo=lark&logoColor=white)](https://open.feishu.cn/)
+[![Pandas](https://img.shields.io/badge/Pandas-Data_Processing-150458.svg?logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![Polars](https://img.shields.io/badge/Polars-Fast_Dataframe-306482.svg?logo=polars&logoColor=white)](https://pola.rs/)
+[![DrissionPage](https://img.shields.io/badge/Crawler-DrissionPage-FF6B6B.svg)]()
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > 基于 **Python CLI 脚本 + n8n 工作流引擎** 的解耦式数据中台架构，实现多平台电商数据采集、数仓建模与飞书自动化同步。
 
@@ -22,6 +28,7 @@
 - 飞书多维表双向同步（MySQL ↔ 飞书）
 - 素材智能诊断（Whisper ASR + 千问大模型）
 - **🤖 智能数据分析 Agent（Text-to-SQL + 自动可视化）**
+- **🏛️ 企业级数据治理（元数据管理 + 数据字典）**
 
 ---
 
@@ -55,6 +62,17 @@
 - MySQL ↔ 飞书多维表双向同步
 - 主键去重、增量同步
 - 字段映射、类型转换
+
+### 🏛️ 数据治理与元数据管理
+
+| 能力 | 说明 |
+|------|------|
+| **自动化元数据采集** | 通过 `information_schema` 自动同步所有业务库表结构 |
+| **企业级管理字段** | 支持数据负责人、安全等级、业务标签管理 |
+| **幂等增量更新** | `ON DUPLICATE KEY UPDATE` 实现增量同步 |
+| **AI Agent 集成** | 为 Text-to-SQL Agent 提供完整的 DDL Schema 上下文 |
+
+**核心价值**：元数据表为 AI Agent 提供结构化的 Schema 上下文，显著提升 Text-to-SQL 准确性。
 
 ### 🤖 智能数据分析 Agent
 
@@ -348,7 +366,8 @@ n8n-Multi_Agent_Workflow/
 ├── SQL_create_table/          # SQL 建表脚本
 │   ├── order_total.sql        # DWD 宽表建表语句
 │   ├── dim_order_kol.sql      # 达人维度表
-│   └── dim_order_product.sql  # 商品维度表
+│   ├── dim_order_product.sql  # 商品维度表
+│   └── dim_Metadata&Dictionary.sql  # 🌟 全域数据字典表
 │
 ├── mysql_syn_feishu/          # 飞书同步模块
 │   ├── run_sync.py            # 统一同步入口
@@ -620,6 +639,112 @@ quick_sync_mysql_to_feishu(
 | `dim_达人维度` | 订单达人维度表 | SQL建模 | DIM |
 | `dim_商品维度` | 订单商品维度表 | SQL建模 | DIM |
 | `dim_达人榜单` | 榜单达人维度表 | SQL建模 | DIM |
+| `dim_sys_metadata_dict` | 🌟 全域数据字典表 | 自动采集 | DIM |
+
+---
+
+## 🏛️ 数据治理与元数据管理 (Data Governance)
+
+### 全域数据字典表 (Metadata Dictionary)
+
+本项目实现了一套**企业级元数据管理系统**，通过 `dim_sys_metadata_dict` 表实现全域数据资产的自动化治理：
+
+```sql
+CREATE TABLE dim.dim_sys_metadata_dict (
+    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `db_name` varchar(64) NOT NULL COMMENT '库名 (ODS/DWD/DIM/ADS)',
+    `table_name` varchar(128) NOT NULL COMMENT '表英文名',
+    `table_comment` varchar(256) DEFAULT NULL COMMENT '表中文注释/业务含义',
+    `column_name` varchar(128) NOT NULL COMMENT '字段英文名',
+    `column_type` varchar(64) DEFAULT NULL COMMENT '字段完整类型',
+    `column_comment` text COMMENT '字段业务口径/逻辑说明',
+    `is_pk` tinyint(1) DEFAULT '0' COMMENT '是否主键',
+    `is_nullable` varchar(10) DEFAULT 'YES' COMMENT '是否允许为空',
+    `column_order` int(11) DEFAULT '0' COMMENT '字段排序',
+    
+    -- 🌟 企业级管理字段
+    `data_owner` varchar(64) DEFAULT 'DataTeam' COMMENT '数据负责人',
+    `security_level` varchar(20) DEFAULT 'L1' COMMENT '安全等级 (L1:公开, L2:内部, L3:绝密)',
+    `tag_list` varchar(255) DEFAULT NULL COMMENT '标签 (如: 财务, 流量, 核心)',
+    
+    `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+    `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_db_table_col` (`db_name`,`table_name`,`column_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='[核心] 全域数据字典与元数据表';
+```
+
+### 核心能力
+
+| 能力 | 说明 |
+|------|------|
+| **自动化元数据采集** | 通过 `information_schema` 自动同步所有业务库表结构 |
+| **智能类型拼接** | 保留字段精度（如 `decimal(18,2)`、`varchar(256)`） |
+| **企业级管理字段** | 支持数据负责人、安全等级、业务标签管理 |
+| **幂等增量更新** | `ON DUPLICATE KEY UPDATE` 实现增量同步，保留手动维护的业务属性 |
+| **AI Agent 集成** | 为 Text-to-SQL Agent 提供完整的 DDL Schema 上下文 |
+
+### 数据治理架构
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    元数据自动采集流程                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │   ODS    │  │   DWD    │  │   DIM    │  │   ADS    │       │
+│  │  原始层  │  │  明细层  │  │  维度层  │  │  应用层  │       │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
+│       │             │             │             │               │
+│       └─────────────┴─────────────┴─────────────┘               │
+│                           │                                     │
+│                           ▼                                     │
+│       ┌───────────────────────────────────────┐                 │
+│       │      information_schema.COLUMNS       │                 │
+│       │      information_schema.TABLES        │                 │
+│       └───────────────────┬───────────────────┘                 │
+│                           │                                     │
+│                           ▼                                     │
+│       ┌───────────────────────────────────────┐                 │
+│       │    dim_sys_metadata_dict (元数据表)    │                 │
+│       │  ┌─────────────────────────────────┐  │                 │
+│       │  │ • 表名/字段名/类型/注释          │  │                 │
+│       │  │ • data_owner (数据负责人)       │  │                 │
+│       │  │ • security_level (安全等级)     │  │                 │
+│       │  │ • tag_list (业务标签)           │  │                 │
+│       │  └─────────────────────────────────┘  │                 │
+│       └───────────────────┬───────────────────┘                 │
+│                           │                                     │
+│              ┌────────────┴────────────┐                        │
+│              ▼                         ▼                        │
+│  ┌───────────────────┐     ┌───────────────────┐               │
+│  │  AI Agent DDL     │     │  数据治理平台      │               │
+│  │  (Text-to-SQL)    │     │  (资产目录/血缘)   │               │
+│  └───────────────────┘     └───────────────────┘               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 与 AI Agent 的协同
+
+元数据表为智能数据分析 Agent 提供了完整的 DDL Schema 上下文：
+
+```javascript
+// n8n AI Agent System Prompt 注入
+const systemMessage = `
+你是一个资深电商数据中台专家，拥有以下数据表：
+
+${metadataDictRows.map(row => 
+  `表: ${row.table_name} (${row.table_comment})
+   字段: ${row.column_name} - ${row.column_type} - ${row.column_comment}`
+).join('\n')}
+
+请根据用户问题生成准确的 SQL 查询语句。
+`;
+```
+
+> 💡 **设计亮点**：元数据表不仅支持数据治理，还为 AI Agent 提供了结构化的 Schema 上下文，显著提升 Text-to-SQL 的准确性。
 
 ---
 
@@ -1048,6 +1173,7 @@ python main.py --max_workers 20
 - ✨ 优化爬虫签名服务
 - ✨ 新增素材智能诊断（Whisper + Qwen）
 - ✨ **新增智能数据分析 Agent（Text-to-SQL + 自动可视化）**
+- ✨ **新增企业级数据治理（元数据管理 + 数据字典）**
 
 ### v1.0.0
 - 🎉 初始版本
