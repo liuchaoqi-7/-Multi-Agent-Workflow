@@ -1,3 +1,4 @@
+# 需要先补齐结算时间
 ALTER TABLE ods.ods_微信_结算_全量 
 ADD COLUMN 结算时间 DATETIME COMMENT '结算时间' AFTER 订单支付时间;
 
