@@ -942,14 +942,13 @@ ${metadataDictRows.map(row =>
 
 ```mermaid
 flowchart TD
-    %% 定义主容器
+    %% 主调度器容器
     subgraph MasterWorkflow["Master Workflow (主调度器)"]
-        direction LR  %% 整体从左到右布局
-        %% 顶部说明
+        %% 触发方式
         trigger["触发方式: 每日凌晨 02:00 或手动触发"]
         
-        %% 主流程节点
-        Switch["Switch (模式)"]
+        %% 核心节点
+        Switch["Switch（模式）"]
         Wait["Wait (等待)"]
         SQL["SQL (建模)"]
         Notify["Notify (通知)"]
@@ -958,27 +957,27 @@ flowchart TD
         SubWF1["Sub-WF 1<br/>API采集 (并行)"]
         SubWF2["Sub-WF 2<br/>爬虫采集 (串行)"]
         SubWF4["Sub-WF 4<br/>飞书同步 (并行)"]
-        
-        %% 调整后的流程连线（核心修改）
+
+        %% 核心流程（语法修正+逻辑正确）
         trigger --> Switch
-        Switch --> SubWF1  %% Switch 先触发 API 采集
-        Switch --> Wait     %% Switch 同时触发等待节点
-        Wait --> SubWF2     %% 等待节点后执行爬虫采集
-        
-        %% 关键：API采集 + 爬虫采集都完成后，才执行SQL建模
-        SubWF1 --> SQL
-        SubWF2 --> SQL
-        
-        SQL --> Notify      %% SQL建模后触发通知
-        SQL --> SubWF4      %% SQL建模后执行飞书同步
+        Switch --> SubWF1
+        Switch --> SubWF2
+        SubWF1 --> Wait
+        SubWF2 --> Wait
+        Wait --> SQL
+        SQL --> SubWF4
+        SubWF4 --> Notify
     end
-    
-    %% 样式美化（完全保留原样式）
+
+    %% 样式美化（保留原有配色）
     style MasterWorkflow fill:#f5f5f5,stroke:#333,stroke-width:2px
-    style Switch fill:#e1f5fe,stroke:#0288d1
-    style Wait fill:#f3e5f5,stroke:#8e24aa
-    style SQL fill:#e8f5e8,stroke:#2e7d32
-    style Notify fill:#fff3e0,stroke:#f57c00
+    style Switch fill:#e1f5fe,stroke:#0288d1,stroke-width:1.5px
+    style Wait fill:#f3e5f5,stroke:#8e24aa,stroke-width:1.5px
+    style SQL fill:#e8f5e8,stroke:#2e7d32,stroke-width:1.5px
+    style Notify fill:#fff3e0,stroke:#f57c00,stroke-width:1.5px
+    style SubWF1 fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    style SubWF2 fill:#e8f5e8,stroke:#2e7d32,stroke-width:1px
+    style SubWF4 fill:#fff3e0,stroke:#f57c00,stroke-width:1px
 ```
 
 ### 子工作流详解
