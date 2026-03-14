@@ -30,3 +30,9 @@ Pillow>=9.0.0
 
 # Optional: Async Support
 aiohttp>=3.8.0
+
+# Development Dependencies (Linting)
+flake8>=6.0.0
+flake8-docstrings>=1.7.0
+flake8-bugbear>=23.0.0
+flake8-comprehensions>=3.14.0
