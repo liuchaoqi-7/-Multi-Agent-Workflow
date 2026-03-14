@@ -687,43 +687,77 @@ CREATE TABLE dim.dim_sys_metadata_dict (
 
 ### 数据治理架构
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    元数据自动采集流程                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │   ODS    │  │   DWD    │  │   DIM    │  │   ADS    │       │
-│  │  原始层  │  │  明细层  │  │  维度层  │  │  应用层  │       │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
-│       │             │             │             │               │
-│       └─────────────┴─────────────┴─────────────┘               │
-│                           │                                     │
-│                           ▼                                     │
-│       ┌───────────────────────────────────────┐                 │
-│       │      information_schema.COLUMNS       │                 │
-│       │      information_schema.TABLES        │                 │
-│       └───────────────────┬───────────────────┘                 │
-│                           │                                     │
-│                           ▼                                     │
-│       ┌───────────────────────────────────────┐                 │
-│       │    dim_sys_metadata_dict (元数据表)    │                 │
-│       │  ┌─────────────────────────────────┐  │                 │
-│       │  │ • 表名/字段名/类型/注释          │  │                 │
-│       │  │ • data_owner (数据负责人)       │  │                 │
-│       │  │ • security_level (安全等级)     │  │                 │
-│       │  │ • tag_list (业务标签)           │  │                 │
-│       │  └─────────────────────────────────┘  │                 │
-│       └───────────────────┬───────────────────┘                 │
-│                           │                                     │
-│              ┌────────────┴────────────┐                        │
-│              ▼                         ▼                        │
-│  ┌───────────────────┐     ┌───────────────────┐               │
-│  │  AI Agent DDL     │     │  数据治理平台      │               │
-│  │  (Text-to-SQL)    │     │  (资产目录/血缘)   │               │
-│  └───────────────────┘     └───────────────────┘               │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    direction TB
+
+    %% 总流程
+    subgraph MetaDataFlow["元数据自动采集流程"]
+        direction TB
+
+        %% 第一层：四层分层
+        subgraph Layers[" "]
+            direction LR
+            ODS["ODS<br/>原始层"]
+            DWD["DWD<br/>明细层"]
+            DIM["DIM<br/>维度层"]
+            ADS["ADS<br/>应用层"]
+        end
+
+        %% 第二层：系统元数据表
+        subgraph InfoSchema["information_schema"]
+            direction TB
+            COLUMNS["COLUMNS"]
+            TABLES["TABLES"]
+        end
+
+        %% 第三层：业务元数据字典表
+        subgraph MetaTable["dim_sys_metadata_dict (元数据表)"]
+            direction TB
+            Fields["""
+• 表名/字段名/类型/注释
+• data_owner (数据负责人)
+• security_level (安全等级)
+• tag_list (业务标签)
+            """]
+        end
+
+        %% 第四层：输出应用
+        subgraph Output[" "]
+            direction LR
+            AIAgent["AI Agent DDL<br/>(Text-to-SQL)"]
+            GovPlatform["数据治理平台<br/>(资产目录/血缘)"]
+        end
+    end
+
+    %% 连线
+    ODS --> InfoSchema
+    DWD --> InfoSchema
+    DIM --> InfoSchema
+    ADS --> InfoSchema
+
+    InfoSchema --> MetaTable
+    MetaTable --> AIAgent
+    MetaTable --> GovPlatform
+
+    %% 配色（沿用你整套主题色）
+    style MetaDataFlow fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Layers fill:#e1f5fe,stroke:#0288d1,stroke-width:1.5px
+    style InfoSchema fill:#e8f5e8,stroke:#2e7d32,stroke-width:1.5px
+    style MetaTable fill:#fff3e0,stroke:#f57c00,stroke-width:1.5px
+    style Output fill:#f3e5f5,stroke:#8e24aa,stroke-width:1.5px
+
+    style ODS fill:#fff,stroke:#555
+    style DWD fill:#fff,stroke:#555
+    style DIM fill:#fff,stroke:#555
+    style ADS fill:#fff,stroke:#555
+
+    style COLUMNS fill:#fff,stroke:#555
+    style TABLES fill:#fff,stroke:#555
+    style Fields fill:#fff,stroke:#555
+
+    style AIAgent fill:#fff,stroke:#555
+    style GovPlatform fill:#fff,stroke:#555
 ```
 
 ### 与 AI Agent 的协同
