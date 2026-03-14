@@ -949,7 +949,7 @@ flowchart TD
         trigger["触发方式: 每日凌晨 02:00 或手动触发"]
         
         %% 主流程节点
-        Switch["Switch（模式）"]
+        Switch["Switch (模式)"]
         Wait["Wait (等待)"]
         SQL["SQL (建模)"]
         Notify["Notify (通知)"]
