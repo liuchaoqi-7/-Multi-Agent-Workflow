@@ -3,8 +3,8 @@
 """
 达人榜单表同步 - MySQL -> 飞书
 
-MySQL表：dim.dim_达人榜单
-飞书表：tblguTY7iu5fNzWi
+MySQL表：dim.dim_达人榜单 
+飞书表：
 主键：达人ID
 """
 
