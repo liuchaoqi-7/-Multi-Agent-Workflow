@@ -1,6 +1,6 @@
 import json
 import time
-import pandas as pd
+import pandas as pd 
 from DrissionPage import ChromiumPage, ChromiumOptions
 from datetime import datetime
 from sqlalchemy import create_engine
