@@ -1,6 +1,6 @@
 {
   "name": "数据中台 - 完整ETL工作流Agent",
-  "nodes": [
+  "nodes": [ 
     {
       "parameters": {
         "content": "## 飞书→MySQL 主播排期\n\n从飞书多维表拉取主播排期，写入 ods.ods_主播排期表，并更新 sync_status。\n对应 mysql_syn_feishu/live_author_schedule.py。",
