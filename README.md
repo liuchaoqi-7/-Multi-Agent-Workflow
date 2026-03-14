@@ -27,7 +27,7 @@
 - 多平台订单/售后/结算数据、投放数据、电商罗盘数据自动化采集（API + 爬虫双模式）
 - 分钟级/日级自动化调度，支持增量/全量同步
 - 飞书多维表双向同步（MySQL ↔ 飞书）
-- 素材智能诊断（Whisper ASR + 千问大模型）
+- **🎬 素材智能诊断（Whisper ASR + 千问大模型 + 极值截图 + 诊断报告）**
 - **🤖 多智能体协作架构（Supervisor Agent 路由分发 + 专业 Agent 协作 + Text-to-SQL + 自动可视化）**
 - **🏛️ 企业级数据治理（元数据管理 + 数据字典）**
 
@@ -68,6 +68,21 @@
 - **商品榜**：商品销售排行
 - **搜索榜**：搜索热词排行
 - **店铺榜**：店铺销售排行
+
+### 🎬 素材智能诊断
+
+| 能力 | 说明 |
+|------|------|
+| **视频自动下载** | 基于抖音视频 ID 自动下载视频文件 |
+| **Whisper ASR 语音识别** | 提取视频语音文案，生成带时间戳的文本 |
+| **千问大模型分析** | 自动纠错、情感分析、卖点提炼 |
+| **极值画面截图** | 自动识别视频高潮点（最高点击、最大上升等）并截图 |
+| **诊断报告生成** | 输出 Excel 报告，包含截图、文案、分析结果 |
+
+**典型应用场景**：
+- 批量分析竞品视频，提取爆款文案和卖点
+- 诊断视频内容，识别高转化片段
+- 自动生成视频内容分析报告
 
 ### 数据建模
 
@@ -499,9 +514,10 @@ n8n-Multi_Agent_Workflow/
 │   │   ├── rank_product.py    # 商品榜单
 │   │   ├── rank_content.py    # 内容榜单
 │   │   └── config.py          # 行业类目配置
-│   └── material_ASR/          # 素材智能诊断
-│       ├── material_qianchuan.py  # 千川素材分析
-│       └── material_rank.py
+│   └── material_ASR/          # 🎬 素材智能诊断
+│       ├── material_qianchuan.py  # 千川素材分析（极值截图+AI分析）
+│       ├── material_rank.py       # 抖音视频批量分析（Whisper+千问）
+│       └── run_single_video.py    # 单条视频处理（n8n 调用入口）
 │
 ├── SQL_create_table/          # SQL 建表脚本
 │   ├── order_total.sql        # DWD 宽表建表语句
@@ -695,6 +711,34 @@ python mysql_syn_feishu/run_sync.py --tables kol,product,rank
 # 仅同步达人维度表（全量）
 python mysql_syn_feishu/run_sync.py --tables kol --full-sync
 ```
+
+### 7. 素材智能诊断
+
+```bash
+# 单条视频处理（n8n 调用入口）
+python web_crawler/material_ASR/run_single_video.py <视频ID> <达人昵称>
+
+# 输出示例（JSON）：
+# {
+#   "error": null,
+#   "video_id": "7123456789012345678",
+#   "segments_text": "[00:01] 大家好...\n[00:05] 今天推荐...",
+#   "segments": [...]
+# }
+
+# 千川素材分析（极值截图 + AI 分析）
+python web_crawler/material_ASR/material_qianchuan.py
+
+# 抖音视频批量分析（Whisper + 千问）
+python web_crawler/material_ASR/material_rank.py
+```
+
+> 💡 **素材诊断流程**：
+> 1. 通过 `run_single_video.py` 下载视频并提取语音文案
+> 2. 使用 Whisper ASR 进行语音识别，生成带时间戳的文本
+> 3. 调用千问大模型进行文案纠错、情感分析、卖点提炼
+> 4. 自动识别视频高潮点并截图
+> 5. 生成 Excel 诊断报告
 
 ---
 
