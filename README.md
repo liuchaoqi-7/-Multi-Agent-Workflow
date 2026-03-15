@@ -357,6 +357,10 @@ LIMIT 10
 
 5. 推送飞书消息卡片（包含分析结论 + 图表 + 数据表格）
 
+> 💡 **数据分析 Agent 示例截图**：
+![数据分析Agent使用示例](docs/images/agent效果展示.png)
+
+
 ### 技术实现
 
 ```javascript
