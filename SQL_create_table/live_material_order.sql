@@ -1,3 +1,79 @@
+CREATE TABLE IF NOT EXISTS ads.ads_直播素材_m分摊表 (
+    -- 1. 直播基础信息
+    `【直播M】更新时间` DATETIME COMMENT '直播M数据更新时间',
+    `【直播M】File Paths` VARCHAR(500) COMMENT '直播M文件路径',
+    `【直播M】场次ID` VARCHAR(64) COMMENT '直播M场次唯一标识',
+    `【直播M】UID` VARCHAR(64) COMMENT '直播M关联的UID（清洗后）',
+    `【直播M】Day` DATETIME COMMENT '直播M业务日期',
+    `【直播M】Hour` DATETIME COMMENT '直播M小时维度时间',
+    `【直播M】minute` DATETIME COMMENT '直播M分钟维度时间',
+    `【直播M】ID` VARCHAR(64) COMMENT '直播M唯一ID',
+    `【直播M】主播ID` VARCHAR(64) COMMENT '直播M主播ID（清洗后）',
+    `【直播M】排期UID` VARCHAR(64) COMMENT '直播M关联的排期UID',
+    `【直播M】主播名称` VARCHAR(100) COMMENT '直播M主播名称',
+    `【直播M】主播归属` VARCHAR(100) COMMENT '直播M主播所属机构/团队',
+    `【直播M】有效分钟` DECIMAL(10, 2) DEFAULT 0 COMMENT '直播M有效时长（分钟）',
+    
+    -- 2. 直播原始指标（DECIMAL保证精度，默认0避免NULL）
+    `【直播M】曝光人次_(曝光-观看率反推)` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M曝光人次（观看率反推值）',
+    `【直播M】进入直播间人数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M进入直播间人数',
+    `【直播M】直播间离开人数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M直播间离开人数',
+    `【直播M】实时在线人数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M实时在线人数',
+    `【直播M】人均观看时长(秒)` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M人均观看时长（秒）',
+    `【直播M】商品曝光人数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M商品曝光人数',
+    `【直播M】商品点击人数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M商品点击人数',
+    `【直播M】成交人数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M成交人数',
+    `【直播M】成交订单数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M成交订单数',
+    `【直播M】成交金额` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M成交金额',
+    `【直播M】新增粉丝数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M新增粉丝数',
+    `【直播M】点赞次数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M点赞次数',
+    `【直播M】评论次数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M评论次数',
+    `【直播M】新加直播团人数` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M新加直播团人数',
+    `【直播M】互动人数_(互动率反推)` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M互动人数（互动率反推值）',
+    `【直播M】负反馈人次_(反馈率反推)` DECIMAL(18, 2) DEFAULT 0 COMMENT '直播M负反馈人次（反馈率反推值）',
+    
+    -- 3. 千川分摊消耗
+    `【千川M】消耗` DECIMAL(18, 2) DEFAULT 0 COMMENT '千川M分钟级分摊消耗（小时总额*分钟占比）',
+    
+    -- 4. 千川分钟级效果
+    `【千川M】展现` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M展现量',
+    `【千川M】点击` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M点击量',
+    `【千川M】订单数` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M订单数',
+    `【千川M】成交金额` DECIMAL(18, 2) DEFAULT 0 COMMENT '千川M成交金额',
+    `【千川M】用户实际支付金额` DECIMAL(18, 2) DEFAULT 0 COMMENT '千川M用户实际支付金额',
+    `【千川M】净成交订单数` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M净成交订单数',
+    `【千川M】净成交金额` DECIMAL(18, 2) DEFAULT 0 COMMENT '千川M净成交金额',
+    `【千川M】用户实际支付净成交金额` DECIMAL(18, 2) DEFAULT 0 COMMENT '千川M用户实际支付净成交金额',
+    
+    -- 5. 追投指标分摊
+    `【千川M】追投消耗` DECIMAL(18, 2) DEFAULT 0 COMMENT '千川M分钟级追投分摊消耗',
+    `【千川M】追投展现` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M追投展现量',
+    `【千川M】追投点击` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M追投点击量',
+    `【千川M】追投订单数` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M追投订单数',
+    `【千川M】追投成交金额` DECIMAL(18, 2) DEFAULT 0 COMMENT '千川M追投成交金额',
+    `【千川M】追投用户实际支付金额` DECIMAL(18, 2) DEFAULT 0 COMMENT '千川M追投用户实际支付金额',
+    `【千川M】视频播放数` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M视频播放数',
+    `【千川M】视频完播数` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M视频完播数',
+    `【千川M】粉丝数` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M粉丝数',
+    `【千川M】评论数` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M评论数',
+    `【千川M】点赞数` DECIMAL(18, 0) DEFAULT 0 COMMENT '千川M点赞数',
+    
+    -- 6. 订单分摊指标
+    `【订单】全店成交额` DECIMAL(18, 2) DEFAULT 0 COMMENT '订单维度全店成交额',
+    `【订单】全店订单数` DECIMAL(18, 0) DEFAULT 0 COMMENT '订单维度全店订单数',
+    `【订单·】支付成交额` DECIMAL(18, 2) DEFAULT 0 COMMENT '订单维度支付成交额（字段名保留原始命名）',
+    `【订单】支付订单数` DECIMAL(18, 0) DEFAULT 0 COMMENT '订单维度支付订单数',
+    `【订单】退后成交额` DECIMAL(18, 2) DEFAULT 0 COMMENT '订单维度退款后成交额（GSV）',
+    `【订单】退后订单数` DECIMAL(18, 0) DEFAULT 0 COMMENT '订单维度退款后订单数',
+
+    -- 主键与索引（核心维度组合主键，保证数据唯一性）
+    PRIMARY KEY (`【直播M】ID`, `【直播M】minute`, `【直播M】UID`),
+    -- 常用查询维度索引（提升筛选/聚合效率）
+    INDEX idx_live_time (`【直播M】Day`, `【直播M】Hour`, `【直播M】minute`),
+    INDEX idx_live_uid (`【直播M】UID`),
+    INDEX idx_live_anchor (`【直播M】主播ID`, `【直播M】主播归属`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='直播素材M分钟级分摊表（整合直播、千川、订单多维度指标，按分钟分摊消耗）';
+
 TRUNCATE TABLE ads.ads_直播素材_m分摊表;  -- 清空表（保留结构和索引）
 
 INSERT INTO ads.ads_直播素材_M分摊表 
