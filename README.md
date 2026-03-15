@@ -1473,7 +1473,8 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 ## 👨‍💻 关于作者 (About Author)
 
 **刘朝齐 (Data Analyst / AI Agent Developer)**
-* 📧 Email: Icq2312437922@gmail.com
+* 🛰️ Wechat: LCQ2312437922
+* 📧 Email: lcq2312437922@gmail.com / 2312437922@qq.com
 * 💬 专注领域：全域电商数据治理 / ETL 数据工程 / Multi-Agent 智能体架构落地
 * 🎯 **目前正在寻找 上海/杭州 地区的数据分析师/数据工程师机会，欢迎随时联系！**
 
