@@ -1,5 +1,45 @@
-TRUNCATE TABLE dim.`dim_达人榜单`
+CREATE TABLE IF NOT EXISTS dim.`dim_达人榜单` (
+    `日期` DATETIME COMMENT '达人最新数据的日期',
+    `行业类目` VARCHAR(50) COMMENT '标准化后的行业类目（如电子教育、图书教育等）',
+    `榜单` VARCHAR(30) COMMENT '达人所属榜单类型（直播带货榜/短视频带货榜）',
+    `账号类型` VARCHAR(20) COMMENT '达人账号类型',
+    `头像URL` VARCHAR(500) COMMENT '达人头像链接',
+    `达人ID` VARCHAR(64) NOT NULL COMMENT '达人唯一标识（主键）',
+    `达人昵称` VARCHAR(100) COMMENT '达人昵称',
+    `抖音号ID` VARCHAR(64) COMMENT '抖音号唯一ID',
+    `品牌名称` VARCHAR(100) COMMENT '所属品牌名称',
+    `品牌ID` VARCHAR(64) COMMENT '所属品牌ID',
+    `机构名称` VARCHAR(100) COMMENT '所属MCN机构名称',
+    `机构ID` VARCHAR(64) COMMENT '所属MCN机构ID',
+    `粉丝数` BIGINT COMMENT '达人最新粉丝数',
+    `直播今日排名` INT COMMENT '直播带货榜最新排名',
+    `视频今日排名` INT COMMENT '短视频带货榜最新排名',
+    `直播成交额下限` DECIMAL(20,2) DEFAULT 0 COMMENT '直播带货榜最新成交额下限',
+    `直播成交额上限` DECIMAL(20,2) DEFAULT 0 COMMENT '直播带货榜最新成交额上限',
+    `直播成交数下限` BIGINT DEFAULT 0 COMMENT '直播带货榜最新成交数下限',
+    `直播成交数上限` BIGINT DEFAULT 0 COMMENT '直播带货榜最新成交数上限',
+    `直播累计成交额下限` DECIMAL(20,2) DEFAULT 0 COMMENT '直播带货榜累计成交额下限',
+    `直播累计成交额上限` DECIMAL(20,2) DEFAULT 0 COMMENT '直播带货榜累计成交额上限',
+    `直播累计成交数下限` BIGINT DEFAULT 0 COMMENT '直播带货榜累计成交数下限',
+    `直播累计成交数上限` BIGINT DEFAULT 0 COMMENT '直播带货榜累计成交数上限',
+    `视频成交额下限` DECIMAL(20,2) DEFAULT 0 COMMENT '短视频带货榜最新成交额下限',
+    `视频成交额上限` DECIMAL(20,2) DEFAULT 0 COMMENT '短视频带货榜最新成交额上限',
+    `视频成交数下限` BIGINT DEFAULT 0 COMMENT '短视频带货榜最新成交数下限',
+    `视频成交数上限` BIGINT DEFAULT 0 COMMENT '短视频带货榜最新成交数上限',
+    `视频累计成交额下限` DECIMAL(20,2) DEFAULT 0 COMMENT '短视频带货榜累计成交额下限',
+    `视频累计成交额上限` DECIMAL(20,2) DEFAULT 0 COMMENT '短视频带货榜累计成交额上限',
+    `视频累计成交数下限` BIGINT DEFAULT 0 COMMENT '短视频带货榜累计成交数下限',
+    `视频累计成交数上限` BIGINT DEFAULT 0 COMMENT '短视频带货榜累计成交数上限',
+    `update_time` DATETIME COMMENT '数据更新时间',
+    -- 主键约束：达人ID唯一，保证数据唯一性
+    PRIMARY KEY (`达人ID`),
+    -- 索引优化：提升常用查询效率
+    INDEX idx_dim_daren_date (`日期`),
+    INDEX idx_dim_daren_category (`行业类目`),
+    INDEX idx_dim_daren_rank (`直播今日排名`, `视频今日排名`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='达人榜单维度表（整合直播/短视频榜单的最新及累计指标）';
 
+TRUNCATE TABLE dim.`dim_达人榜单`
 
 INSERT INTO dim.`dim_达人榜单`
 WITH base_stats AS ( 
