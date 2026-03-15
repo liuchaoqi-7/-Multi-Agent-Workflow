@@ -1,5 +1,5 @@
 {
-  "name": "飞书通用同步", 
+  "name": "飞书通用同步",
   "nodes": [
     {
       "parameters": {
@@ -54,8 +54,8 @@
       "name": "获取飞书字段列表",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -75,8 +75,8 @@
       "name": "获取MySQL字段列表",
       "credentials": {
         "mySql": {
-          "id": "T0m8TFmF5PgcEvRh",
-          "name": "ods"
+          "id": "YOUR_MYSQL_CREDENTIAL_ID",
+          "name": "YOUR_MYSQL_CREDENTIAL_NAME"
         }
       }
     },
@@ -112,8 +112,8 @@
       "name": "新增字段",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -129,7 +129,7 @@
       ],
       "id": "d142ad60-27de-42f6-b8fe-3d743dffefd0",
       "name": "Wait",
-      "webhookId": "fdd08e3c-0b4d-4560-a36b-9fffef41e887"
+      "webhookId": "YOUR_WEBHOOK_ID"
     },
     {
       "parameters": {
@@ -201,7 +201,7 @@
       ],
       "id": "711e9efe-95c4-45f5-b2c8-bd6ecc5f6254",
       "name": "等待0.5秒（避免限流）",
-      "webhookId": "a368e41b-8f3d-4835-857f-48eae5d645fe"
+      "webhookId": "YOUR_WEBHOOK_ID"
     },
     {
       "parameters": {
@@ -295,8 +295,8 @@
       "name": "批量更新飞书记录",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -319,8 +319,8 @@
       "name": "批量创建飞书记录",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -344,8 +344,8 @@
       "name": "飞书多维表查询",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -365,8 +365,8 @@
       "name": "数据库数据查询",
       "credentials": {
         "mySql": {
-          "id": "T0m8TFmF5PgcEvRh",
-          "name": "ods"
+          "id": "YOUR_MYSQL_CREDENTIAL_ID",
+          "name": "YOUR_MYSQL_CREDENTIAL_NAME"
         }
       }
     },
@@ -969,11 +969,11 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "83c30847-c3f0-4e47-bac6-d12847f1d854",
+  "versionId": "YOUR_VERSION_ID",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "e051e3c5a0ae543580ba70819ad50e21723e09fa5490e951d2e6147faded65e2"
+    "instanceId": "YOUR_INSTANCE_ID"
   },
-  "id": "5QCeRC9Jid0qgNIJ",
+  "id": "YOUR_WORKFLOW_ID",
   "tags": []
 }
