@@ -1,566 +1,6 @@
 {
-  "name": "数据分析Agent", 
+  "name": "数据分析Agent",
   "nodes": [
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "feishu-bot",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        -592,
-        272
-      ],
-      "id": "dbb71476-8bc0-4f68-85b0-87c87668f160",
-      "name": "Webhook",
-      "webhookId": "15c20030-d04f-49f2-905f-36b917dc04ec",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "656245cb-9cf1-496a-a26f-0866ba4c1327",
-              "leftValue": "={{ $json.body.type }}",
-              "rightValue": "url_verification",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -384,
-        272
-      ],
-      "id": "af46f9c8-f606-4cd7-b467-77ce017bebd2",
-      "name": "If"
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={\n  \"challenge\": \"{{ $json.body.challenge }}\"\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [
-        -176,
-        160
-      ],
-      "id": "303a1cdf-fb95-4874-9ea0-f58a7f1a15f3",
-      "name": "Respond to Webhook"
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "{\n  \"result\":\"success\"\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [
-        -176,
-        368
-      ],
-      "id": "282ba40e-ad5d-499b-9ffc-6f07dcf74d40",
-      "name": "Respond to Webhook1"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ JSON.parse($json.body.event.message.content).text }}",
-        "options": {
-          "systemMessage": "=# Role\n\n你是一个资深电商数据中台专家。你负责通过 SQL 访问阿里云 RDS 实例上的 `ads` 和 `dwd` 两个数据库，进行直播与电商数据的关联分析。\n\n【系统当前时间】：{{ $now.setZone('Asia/Shanghai').toFormat('yyyy-MM-dd HH:mm:ss') }}\n⚠️ 时间铁律：当用户提问中包含“今天”、“本月”、“最近7天”等相对时间词汇时，你必须严格以上述【系统当前时间】为基准进行推算和查库！绝对禁止凭借幻觉捏造年份！\n\n# Database Schema (Important)\n\n注意：由于表分布在不同数据库，生成 SQL 时请严格遵守以下库名路径：\n\n### 1. 库名：ads\n\n- **表名**：`ads_直播素材_m分摊表`\n- **查询路径**：`ads.ads_直播素材_m分摊表`\n- **用途**：每分钟的每个主播的直播间明细，包含直播指标及千川投放数据以及抖店订单数据。\n\n### 2. 库名：dwd\n\n- **表名 A**：`dwd_电商数据_宽表`\n- **查询路径**：`dwd.dwd_电商数据_宽表`\n- **用途**：抖店/微信/小红书全渠道合并订单+售后+结算明细，由`平台`字段区分。\n- **表名 B**：`dwd_千川素材h_中间表`\n- **查询路径**：`dwd.dwd_千川素材h_中间表`\n- **用途**：千川投放素材维度的转化分析，包含素材-直播间画面、素材-视频、素材其他，用`来源`字段区分。\n\n# DDL Details\n\n- 请参考以下核心字段进行逻辑编写：\n- `dwd.dwd_电商数据_宽表` 中的 `平台` 字段包含：'抖店', '微信', '小红书';\n\n  CREATE TABLE `dwd_电商数据_宽表` (\n      `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '唯一标识每行数据',\n      `更新时间` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n      `店铺ID` char(64) DEFAULT NULL COMMENT '店铺ID',\n      `主订单ID` char(64) DEFAULT NULL COMMENT '主订单ID（抖店=根订单ID/微信/小红书=订单ID）',\n      `子订单ID` char(64) DEFAULT NULL COMMENT '子订单ID（无则为空）',\n      `售后单号` char(255) DEFAULT NULL COMMENT '售后单号',\n      `用户ID` char(255) DEFAULT NULL COMMENT '用户唯一标识',\n      `提交时间` datetime DEFAULT NULL COMMENT '订单提交时间',\n      `支付时间` datetime DEFAULT NULL COMMENT '订单支付时间',\n      `完成时间` datetime DEFAULT NULL COMMENT '订单完成时间',\n      `售后申请时间` datetime DEFAULT NULL COMMENT '售后申请时间',\n      `结算时间` datetime DEFAULT NULL COMMENT '结算时间',\n      `订单状态` char(64) DEFAULT NULL COMMENT '订单状态',\n      `售后状态` char(64) DEFAULT NULL COMMENT '售后状态（无则为空）',\n      `结算状态` char(64) DEFAULT NULL COMMENT '结算状态（无则为空）',\n      `售后原因` char(255) DEFAULT NULL COMMENT '售后原因',\n      `售后备注` char(255) DEFAULT NULL COMMENT '售后备注',\n      `商品ID` char(64) DEFAULT NULL COMMENT '商品ID',\n      `SKUID` char(64) DEFAULT NULL COMMENT 'SKU ID',\n      `商品名称` char(64) DEFAULT NULL COMMENT '商品名称',\n      `下单来源` char(64) DEFAULT NULL COMMENT '下单来源（无则为空）',\n      `视频ID` char(64) DEFAULT NULL COMMENT '视频ID（无则为空）',\n      `直播ID` char(255) DEFAULT NULL COMMENT '直播ID（无则为空）',\n      `支付方式` char(64) DEFAULT NULL COMMENT '支付方式',\n      `达人UID` char(64) DEFAULT NULL COMMENT '达人ID',\n      `达人名称` char(64) DEFAULT NULL COMMENT '达人昵称',\n      `内容ID` char(64) DEFAULT NULL COMMENT '内容ID（无则为空）',\n      `广告ID` char(64) DEFAULT NULL COMMENT '广告ID（无则为空）',\n      `流量来源ID` char(64) DEFAULT NULL COMMENT '流量来源ID（无则为空）',\n      `物流公司` char(64) DEFAULT NULL COMMENT '物流公司',\n      `物流单号` char(64) DEFAULT NULL COMMENT '物流单号',\n      `收件人姓名` char(64) DEFAULT NULL COMMENT '收件人姓名',\n      `收件人电话` char(64) DEFAULT NULL COMMENT '收件人电话',\n      `收件人省份` char(64) DEFAULT NULL COMMENT '收件人省份',\n      `收件人城市` char(64) DEFAULT NULL COMMENT '收件人城市',\n      `购买数量` decimal(18, 0) DEFAULT NULL COMMENT '商品数量',\n      `商家实收` decimal(18, 2) DEFAULT NULL COMMENT '商家实收金额(元)',\n      `买家实付` decimal(18, 2) DEFAULT NULL COMMENT '买家实付金额(元)',\n      `订单总额` decimal(18, 2) DEFAULT NULL COMMENT '订单总金额(元)',\n      `商家承担金额` decimal(18, 2) DEFAULT NULL COMMENT '商家承担优惠金额(元)',\n      `平台承担金额` decimal(18, 2) DEFAULT NULL COMMENT '平台承担优惠金额(元)',\n      `达人承担金额` decimal(18, 2) DEFAULT NULL COMMENT '达人承担优惠金额(元)',\n      `退款金额` decimal(18, 2) DEFAULT NULL COMMENT '退款金额(元)',\n      `结算金额` decimal(18, 2) DEFAULT NULL COMMENT '结算金额(元)',\n      `订单当前盈收` decimal(18, 2) DEFAULT NULL COMMENT '订单当前盈收(元)',\n      `结算总收入` decimal(18, 2) DEFAULT NULL COMMENT '结算总收入(元)',\n      `结算总支出` decimal(18, 2) DEFAULT NULL COMMENT '结算总支出(元)',\n      `店铺优惠` decimal(18, 2) DEFAULT NULL COMMENT '店铺优惠券金额(元)',\n      `平台优惠` decimal(18, 2) DEFAULT NULL COMMENT '平台优惠券金额(元)',\n      `达人优惠` decimal(18, 2) DEFAULT NULL COMMENT '达人优惠券金额(元)',\n      `达人佣金` decimal(18, 2) DEFAULT NULL COMMENT '达人佣金金额(元)',\n      `平台佣金` decimal(18, 2) DEFAULT NULL COMMENT '平台佣金金额(元)',\n      `服务商佣金` decimal(18, 2) DEFAULT NULL COMMENT '服务商佣金金额(元)',\n      `团长佣金` decimal(18, 2) DEFAULT NULL COMMENT '团长佣金金额(元)',\n      `渠道分成` decimal(18, 2) DEFAULT NULL COMMENT '渠道分成金额(元)',\n      `其他分成` decimal(18, 2) DEFAULT NULL COMMENT '其他分成金额(元)',\n      `渠道推广费` decimal(18, 2) DEFAULT NULL COMMENT '渠道推广费金额(元)',\n      `运费` decimal(18, 2) DEFAULT NULL COMMENT '运费金额(元)',\n      `支付补贴` decimal(18, 2) DEFAULT NULL COMMENT '支付补贴金额(元)',\n      `政府补贴` decimal(18, 2) DEFAULT NULL COMMENT '政府补贴金额(元)',\n      `其它补贴` decimal(18, 2) DEFAULT NULL COMMENT '其它补贴金额(元)',\n      `免佣补贴` decimal(18, 2) DEFAULT NULL COMMENT '免佣补贴(元)',\n      `平台` char(16) DEFAULT NULL COMMENT '数据来源：抖店/微信/小红书',\n      PRIMARY KEY (`id`) USING BTREE,\n      KEY `idx_order_info` (\n          `主订单ID`,\n          `子订单ID`,\n          `售后单号`,\n          `平台`\n      ) USING BTREE,\n      KEY `idx_shop_ID` (`店铺ID`) USING BTREE,\n      KEY `idx_create_time` (`提交时间`) USING BTREE,\n      KEY `idx_user_ID` (`用户ID`) USING BTREE,\n      KEY `idx_kol_ID` (`达人UID`) USING BTREE\n  ) ENGINE = InnoDB AUTO_INCREMENT = 131071 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '抖店+微信+小红书合并数据全量表'\n- `dwd.dwd_千川素材h_中间表`中的`来源`字段包含：素材-直播间画面、素材-视频、素材-其他；素材ID、类型、名称投放/创建时间仅素材-视频部分有值，其余两个来源为NULL。\n\n  CREATE TABLE `dwd_千川素材h_中间表` (\n      `来源` varchar(50) DEFAULT NULL,\n      `千川UID` varchar(100) DEFAULT NULL,\n      `抖音UID` varchar(100) DEFAULT NULL,\n      `全域素材视频类型` varchar(100) DEFAULT NULL,\n      `全域素材视频名称` text,\n      `素材ID` varchar(100) DEFAULT NULL,\n      `日期` datetime DEFAULT NULL,\n      `创建时间` datetime DEFAULT NULL,\n      `投放时间` datetime DEFAULT NULL,\n      `时间` datetime DEFAULT NULL,\n      `消耗` decimal(40, 2) DEFAULT NULL,\n      `展现` decimal(40, 2) DEFAULT NULL,\n      `点击` decimal(40, 2) DEFAULT NULL,\n      `订单数` decimal(40, 2) DEFAULT NULL,\n      `成交金额` decimal(40, 2) DEFAULT NULL,\n      `用户实际支付金额` decimal(40, 2) DEFAULT NULL,\n      `净成交订单数` decimal(40, 2) DEFAULT NULL,\n      `净成交金额` decimal(40, 2) DEFAULT NULL,\n      `用户实际支付净成交金额` decimal(40, 2) DEFAULT NULL,\n      `追投消耗` decimal(40, 2) DEFAULT NULL,\n      `追投展现` decimal(40, 2) DEFAULT NULL,\n      `追投点击` decimal(40, 2) DEFAULT NULL,\n      `追投订单数` decimal(40, 2) DEFAULT NULL,\n      `追投成交金额` decimal(40, 2) DEFAULT NULL,\n      `追投用户实际支付金额` decimal(40, 2) DEFAULT NULL,\n      `视频播放数` decimal(40, 2) DEFAULT NULL,\n      `2秒播放数` decimal(18, 0) DEFAULT NULL,\n      `3秒播放数` decimal(18, 0) DEFAULT NULL,\n      `5秒播放数` decimal(18, 0) DEFAULT NULL,\n      `10秒播放数` decimal(18, 0) DEFAULT NULL,\n      `视频完播数` decimal(40, 2) DEFAULT NULL,\n      `粉丝数` decimal(40, 2) DEFAULT NULL,\n      `评论数` decimal(40, 2) DEFAULT NULL,\n      `点赞数` decimal(40, 2) DEFAULT NULL,\n      `1小时内退款订单数` decimal(40, 2) DEFAULT NULL,\n      `1小时内退款金额` decimal(40, 2) DEFAULT NULL,\n      `7日结算订单数` decimal(40, 2) DEFAULT NULL,\n      `7日结算金额` decimal(40, 2) DEFAULT NULL\n  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci\n- `ads.ads_直播素材_m分摊表` 由以直播数据（【直播M】为前缀的字段）为主表连接巨量千川投放数据（【千川M】为前缀的字段）和抖店订单数据（【订单M】为前缀的字段），M代表分钟粒度，其中 `【直播M】minute` 用于时间筛选，`【直播M】主播ID`用于筛选主播，`【直播M】UID`用于筛选投放账号。\n\n  CREATE TABLE `ads_直播素材_m分摊表` (\n      `【直播M】更新时间` datetime DEFAULT NULL,\n      `【直播M】File Paths` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,\n      `【直播M】场次ID` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,\n      `【直播M】UID` longtext,\n      `【直播M】Day` datetime DEFAULT NULL,\n      `【直播M】Hour` datetime DEFAULT NULL,\n      `【直播M】minute` datetime DEFAULT NULL,\n      `【直播M】ID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,\n      `【直播M】主播ID` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,\n      `【直播M】排期UID` varchar(25) NOT NULL COMMENT '唯一标识',\n      `【直播M】主播名称` varchar(20) DEFAULT NULL,\n      `【直播M】主播归属` varchar(20) DEFAULT NULL,\n      `【直播M】有效分钟` bigint DEFAULT NULL,\n      `【直播M】曝光人次_(曝光-观看率反推)` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】进入直播间人数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】直播间离开人数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】实时在线人数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】人均观看时长(秒)` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】商品曝光人数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】商品点击人数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】成交人数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】成交订单数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】成交金额` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】新增粉丝数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】点赞次数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】评论次数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】新加直播团人数` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】互动人数_(互动率反推)` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【直播M】负反馈人次_(反馈率反推)` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【千川M】消耗` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【千川M】展现` decimal(18, 0) DEFAULT NULL,\n      `【千川M】点击` decimal(18, 0) DEFAULT NULL,\n      `【千川M】订单数` decimal(18, 0) DEFAULT NULL,\n      `【千川M】成交金额` decimal(18, 2) DEFAULT NULL,\n      `【千川M】用户实际支付金额` decimal(18, 2) DEFAULT NULL,\n      `【千川M】净成交订单数` decimal(18, 0) DEFAULT NULL,\n      `【千川M】净成交金额` decimal(18, 2) DEFAULT NULL,\n      `【千川M】用户实际支付净成交金额` decimal(18, 2) DEFAULT NULL,\n      `【千川M】追投消耗` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【千川M】追投展现` decimal(18, 0) DEFAULT NULL,\n      `【千川M】追投点击` decimal(18, 0) DEFAULT NULL,\n      `【千川M】追投订单数` decimal(18, 0) DEFAULT NULL,\n      `【千川M】追投成交金额` decimal(18, 2) DEFAULT NULL,\n      `【千川M】追投用户实际支付金额` decimal(18, 2) DEFAULT NULL,\n      `【千川M】视频播放数` decimal(18, 0) DEFAULT NULL,\n      `【千川M】视频完播数` decimal(18, 0) DEFAULT NULL,\n      `【千川M】粉丝数` decimal(18, 0) DEFAULT NULL,\n      `【千川M】评论数` decimal(18, 0) DEFAULT NULL,\n      `【千川M】点赞数` decimal(18, 0) DEFAULT NULL,\n      `【订单】全店成交额` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【订单】全店订单数` decimal(18, 0) NOT NULL DEFAULT '0',\n      `【订单】支付成交额` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【订单】支付订单数` decimal(18, 0) NOT NULL DEFAULT '0',\n      `【订单】退后成交额` decimal(18, 2) NOT NULL DEFAULT '0.00',\n      `【订单】退后订单数` decimal(18, 0) NOT NULL DEFAULT '0'\n  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci\n\n# Instruction\n\n1. **全路径查询**：所有生成的 SQL 语句，表名必须为以上提供的（`ads_直播素材_m分摊表`，`dwd_电商数据_宽表`，`dwd_千川素材h_中间表`），并且带上所属库名（例如：SELECT * FROM dwd.dwd_电商数据_宽表），。\n2. **时区**：强制使用 `Asia/Shanghai` 时区。\n3. 输出格式铁律：输出的内容绝对不能少了全面的分析论述，分点论述图文并茂，并附带核心字段计算结果的表格数据，具体参考下面的可视化图表生成铁律，请使用结构化的项目符号和 Markdown 表格 (|---|---|) 来清晰展示数据，关键指标请用 **加粗** 突出请务必使用结构化的项目符号（如：- 、1. 2. 3. ）或加粗的文本列表来清晰展示数据，关键指标请用 **加粗** 突出，并合理使用 emoji 增加可读性。金额保留两位小数。\n4. **安全**：严禁执行非查询类的 SQL 命令。\n5. **工具调用格式铁律**：在调用 MySQL 工具时，传递给参数 `sql` 的值必须是**纯文本的、可以直接运行的 SQL 语句本体**，不能是sql:查询语句。绝对不允许使用 Markdown 代码块包裹（严禁出现 ```sql 和 ```），\n6. **SQL语法铁律**：\n- 在编写 SQL 时，所有字段和表名必须和提供的DDL里的完全一致，所有的字段和字段别名（AS）严禁裸露使用特殊符号（如 %、-、/ 等）！如果字段和字段别名必须包含特殊符号，包括函数内部使用字段，或者包含纯数字，必须强制使用反引号（`）将其完整包裹；且如果表名或字段名是中文和英文组合的，中间绝对不能添加空格，例如：`【直播M】UID` AS `千川UID`、SUM(`【订单】全店成交额`) AS `GMV`。错误示例：'dwd.dwd_千川素材 h_中间表'，在‘千川素材h’中英文之间加了空格符号，这是绝对不允许的！在使用表名时必须加上库名，例如：'dwd.dwd_千川素材h_中间表'。严禁在 SQL 语句前后附加任何解释性文字！\n- “⚠️ 严格警告：为了防止系统内存溢出，你在生成 SQL 时必须遵守以下限制：优先使用聚合函数（SUM, COUNT, AVG, GROUP BY）直接在数据库层完成统计。\n- 计算退款率的方法：ROUND(1-SUM(【订单】退后订单数)/SUM(【订单】全店订单数), 2)，如果涉及直播必须用这个计算方法。\n- 关于支付金额必须筛选掉支付时间为null的订单，支付时间不为空的才是真实支付金额。\n- 综合分析直播-千川投放-订单数据时，参考以下查询语句：\n```sql\nSELECT\nDATE_FORMAT(【直播M】minute, '%Y-%m') AS 日期,\n【直播M】UID UID\n,`【直播M】主播名称` 主播\n,COUNT(`【直播M】主播名称`) 直播分钟数\n,SUM(`【千川M】展现`) AS 展现总和\n,SUM(`【千川M】点击`) AS 点击总和\n,SUM(【千川M】消耗) AS 千川消耗\n, SUM(【千川M】成交金额) AS 千川GMV\n,ROUND(SUM(【千川M】成交金额)/SUM(【千川M】消耗),2) 千川ROI\n,SUM(【订单】全店成交额) AS 订单GMV\n,ROUND(SUM(【订单】全店成交额)/(COUNT(`【直播M】minute`)/60),2) AS 单时产出 \n,ROUND(SUM(【订单】全店成交额)/SUM(【订单】全店订单数),2) AS 客单价\n,SUM(【订单】退后成交额) AS 订单GSV\n,(SUM(【订单】全店成交额)-SUM(【订单】退后成交额)) 订单退款金额\n,ROUND(1-SUM(【订单】退后订单数)/SUM(【订单】全店订单数), 2) AS 订单退款率\nFROM ads.ads_直播素材_m分摊表\nGROUP BY 1,2,3\n-- HAVING 日期 >='2026-02'\nORDER BY 1 ,2 DESC\n```\n7. **可视化图表生成铁律**：\n当你进行数据对比、趋势分析时，你必须在回答的最末尾，提供一个用于生成图表的 Chart.js JSON 配置文件。\n- ⚠️ 专属标签：必须且只能用 ```json 和 ``` 将配置完整包裹。绝对禁止用此标签包裹其他任何数据！\n- 【极其关键】：必须是严格的标准 JSON 对象（以 { 开头）！绝对不能包含 JavaScript 函数、变量、注释或结尾的逗号。所有键名(key)必须带双引号。\n- 颜色请强制使用这组莫兰迪色系的 Hex 码：[\"#9A8B88\", \"#C3B7B6\", \"#D9D0C7\", \"#A4B1AD\", \"#8E9E9C\"]。\n- 示例格式如下：\n```json\n{\n  \"type\": \"bar\",\n  \"data\": {\n    \"labels\": [\"抖店\", \"微信\", \"小红书\"],\n    \"datasets\": [{\n      \"label\": \"实付金额总计\",\n      \"backgroundColor\": [\"#9A8B88\", \"#C3B7B6\", \"#D9D0C7\"],\n      \"data\": [67117.00, 15000.00, 8000.00]\n    }]\n  },\n  \"options\": {\n    \"plugins\": {\n      \"datalabels\": { \"display\": true }\n    }\n  }\n}```\n8. **飞书 Markdown 语法铁律**：\n你的输出最终将渲染在飞书卡片中。飞书的解析极其严格，你在使用加粗符号 `**` 时，必须确保它们严格成对出现（例如：**关键指标**）。绝对禁止输出孤立的、没有闭合的 `**`，否则将导致整个系统崩溃！",
-          "enableStreaming": true
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        144,
-        368
-      ],
-      "id": "b4ef948e-b856-49ac-ab94-032e31c0f3b2",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $json.body.event.message.chat_id }}"
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
-      "position": [
-        240,
-        576
-      ],
-      "id": "94376284-7d9c-4892-b727-a11ba18c54c3",
-      "name": "Simple Memory"
-    },
-    {
-      "parameters": {
-        "model": {
-          "__rl": true,
-          "value": "qwen-plus",
-          "mode": "list",
-          "cachedResultName": "qwen-plus"
-        },
-        "responsesApiEnabled": false,
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1.3,
-      "position": [
-        64,
-        576
-      ],
-      "id": "d0755f66-d0e5-4ac9-ba31-4bee30210e70",
-      "name": "OpenAI Chat Model",
-      "credentials": {
-        "openAiApi": {
-          "id": "atJZfCSRj5qZl6Zv",
-          "name": "Q wen"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "descriptionType": "manual",
-        "toolDescription": "用于执行 MySQL 查询以获取电商数据。可用表包括：`dwd_电商数据_宽表` (电商平台的订单数据)、`dwd_千川素材h_中间表` (巨量千川素材投放数据)、`ads_直播素材_m分摊表` （直播+投放+订单数据）。在执行查询前，请先参考系统提示词中的 DDL 结构，并且所有字段（包括函数内部）必须使用反引号（`）将其完整包裹。",
-        "operation": "executeQuery",
-        "query": "{{ $fromAI('sql') }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.mySqlTool",
-      "typeVersion": 2.5,
-      "position": [
-        400,
-        576
-      ],
-      "id": "4aa81938-87c8-4229-93d9-2db5f3fd2e51",
-      "name": "Execute a SQL query in MySQL",
-      "notesInFlow": false,
-      "credentials": {
-        "mySql": {
-          "id": "tzLFkyCS63QjXCko",
-          "name": "MySQL account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "message",
-        "operation": "message:send",
-        "receive_id_type": "chat_id",
-        "receive_id": "oc_ef684cb3dc081c8e66b075712441d0f7",
-        "content": "={{ JSON.stringify({\n  \"config\": { \"wide_screen_mode\": true },\n  \"header\": {\n    \"title\": { \"tag\": \"plain_text\", \"content\": \"📊 智能数据中台洞察\" },\n    \"template\": \"blue\"\n  },\n  \"elements\": [\n    {\n      \"tag\": \"div\",\n      \"text\": {\n        \"tag\": \"lark_md\",\n        \"content\": $node[\"分离文本和图表\"].json[\"cleanText\"]\n      }\n    }\n  ]\n}) }}",
-        "uuid": "={{ $generateUuid() }}"
-      },
-      "type": "n8n-nodes-feishu-lite.feishuNode",
-      "typeVersion": 1,
-      "position": [
-        976,
-        592
-      ],
-      "id": "0d9ae90a-2651-4826-86c3-6b372d66344f",
-      "name": "飞书推送数据分析结果",
-      "credentials": {
-        "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// 1. 获取大模型原始输出\nconst rawText = $input.first().json.output;\nlet cleanText = rawText;\n\nlet chartJson = null;\nlet hasChart = false;\nlet excelData = null;\nlet hasExcel = false;\n\n// ==========================================\n// 安检第一道：精准提取 Excel 数据 (只认 excel_data)\n// ==========================================\n// 正则解释：严格匹配 ```excel_data 开头的代码块\n// const excelRegex = /```(?:excel_data)\\s*([\\s\\S]*?)(?:```|$)/i;\n// const excelMatch = cleanText.match(excelRegex);\n\n// if (excelMatch && excelMatch[1]) {\n//   // 把 Excel 数据从卡片文本里切掉\n//   cleanText = cleanText.replace(excelMatch[0], '').trim();\n//   try {\n//     excelData = JSON.parse(excelMatch[1].trim());\n//     hasExcel = true;\n//   } catch (e) {\n//     console.log(\"Excel 数据格式错误，解析失败: \", e.message);\n//   }\n// }\n\n// ==========================================\n// 安检第二道：精准提取 图表 数据 (只认 json)\n// ==========================================\n// 正则解释：严格匹配 ```json 开头的代码块\nconst chartRegex = /```(?:json|JSON)\\s*([\\s\\S]*?)(?:```|$)/;\n// ⚠️ 注意：这里是从已经被切掉 Excel 的 cleanText 里找，彻底杜绝串台！\nconst chartMatch = cleanText.match(chartRegex);\n\nif (chartMatch && chartMatch[1]) {\n  cleanText = cleanText.replace(chartMatch[0], '').trim();\n  try {\n    chartJson = JSON.parse(chartMatch[1].trim());\n    hasChart = true;\n  } catch (e) {\n    console.log(\"图表 JSON 格式错误，解析失败: \", e.message);\n  }\n}\n\n// 3. 顺手打扫战场，清理掉残留的引导语\ncleanText = cleanText.replace(/###?\\s*[四五六七]?[、\\.]?(可视化分析|图表展示|数据明细).*$/, '').trim();\n\n// 4. 组装发货\nreturn {\n  json: {\n    cleanText: cleanText,\n    chartJson: chartJson,\n    hasChart: hasChart,\n    // excelData: excelData,\n    // hasExcel: hasExcel\n  }\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        496,
-        368
-      ],
-      "id": "fab0ea12-6418-4904-9c7f-2ba4b5813012",
-      "name": "分离文本和图表"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://quickchart.io/chart",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ \n  {\n    \"width\": 800,\n    \"height\": 400,\n    \"backgroundColor\": \"white\",\n    \"chart\": $('图片生成判断').first().json.chartJson\n  }\n}}",
-        "options": {
-          "response": {
-            "response": {
-              "neverError": true,
-              "responseFormat": "file"
-            }
-          }
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        1440,
-        80
-      ],
-      "id": "89c3590b-6033-4c83-9afa-24c76d725b2e",
-      "name": "生成图片"
-    },
-    {
-      "parameters": {
-        "resource": "auth",
-        "operation": "auth:getAccessToken"
-      },
-      "type": "n8n-nodes-feishu-lite.feishuNode",
-      "typeVersion": 1,
-      "position": [
-        1200,
-        80
-      ],
-      "id": "0ca87d1c-6766-4866-bc98-8ce1108329c0",
-      "name": "获取授权token",
-      "credentials": {
-        "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://open.feishu.cn/open-apis/im/v1/images",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $('获取授权token').first().json.accessToken }}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "multipart/form-data; boundary=---7MA4YWxkTrZu0gW"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "multipart-form-data",
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "image_type",
-              "value": "message"
-            },
-            {
-              "parameterType": "formBinaryData",
-              "name": "image",
-              "inputDataFieldName": "data"
-            }
-          ]
-        },
-        "options": {
-          "response": {
-            "response": {
-              "neverError": true
-            }
-          }
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        1664,
-        80
-      ],
-      "id": "af6e0d93-5ad8-4cb2-be45-8106b4fca371",
-      "name": "上传图片"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "25031cef-ecd2-41bb-aa07-c7e467096a7c",
-              "leftValue": "={{ $json.hasChart }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            },
-            {
-              "id": "3c17589c-6698-4ef1-8689-bd6009d0d1d1",
-              "leftValue": "={{ $json.hasExcel }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "or"
-        },
-        "looseTypeValidation": "",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        704,
-        368
-      ],
-      "id": "31cf19fc-810f-4dfa-9c75-716acaa5cb51",
-      "name": "图片生成判断"
-    },
-    {
-      "parameters": {
-        "resource": "message",
-        "operation": "message:send",
-        "receive_id_type": "chat_id",
-        "receive_id": "oc_ef684cb3dc081c8e66b075712441d0f7",
-        "msg_type": "interactive",
-        "content": "={{\n  (function() {\n    // 1. 【防空处理】获取核心数据，如果为空则赋予默认值\n    const textData = $node[\"分离文本和图表\"].json[\"cleanText\"] || \"数据处理中，未返回分析文本。\";\n    const excelData = $node[\"分离文本和图表\"].json[\"excelData\"] || [];\n    \n    // 【防空处理】获取图片 Key。因为有可能没画图，如果节点不存在或没执行，用 try-catch 防止整个表达式崩溃\n    let imageKey = null;\n    try {\n        // 注意：这里的 '上传图片' 请替换为你实际将图表传给飞书并获取 image_key 的那个节点名称\n        imageKey = $node[\"上传图片\"].json[\"data\"][\"image_key\"];\n    } catch(e) {\n        imageKey = null; \n    }\n\n    // 2. 基础组件：先放入“文字分析”\n    let elements = [\n      {\n        \"tag\": \"div\",\n        \"text\": { \"tag\": \"lark_md\", \"content\": textData }\n      }\n    ];\n\n    // 3. 智能注入：如果有图表（image_key），就在文字下面追加“图片组件”\n    if (imageKey) {\n        elements.push({\n            \"tag\": \"img\",\n            \"img_key\": imageKey,\n            \"alt\": { \"tag\": \"plain_text\", \"content\": \"数据可视化图表\" },\n            \"mode\": \"fit_horizontal\",\n            \"preview\": true\n        });\n    }\n\n    // 4. 智能注入：如果有明细数据（excelData），就在最下方追加“原生表格组件”\n    if (Array.isArray(excelData) && excelData.length > 0) {\n       // 提取表头\n       const keys = Object.keys(excelData[0]);\n       const columns = keys.map(key => ({\n           \"name\": key,\n           \"display_name\": key,\n           \"data_type\": \"text\" // 统一转为 text，防止飞书解析格式报错\n       }));\n       \n       // 【防空处理】遍历数据行，把所有 null 或数字强转为字符串，防止飞书渲染崩溃\n       const rows = excelData.map(row => {\n           let safeRow = {};\n           for(let k in row) safeRow[k] = String(row[k] || \"\");\n           return safeRow;\n       });\n\n       // 增加一条优雅的华丽分割线\n       elements.push({ \"tag\": \"hr\" });\n       \n       // 放入自带翻页功能的表格\n       elements.push({\n           \"tag\": \"table\",\n           \"page_size\": 10, // 每页 5 行，自带翻页按钮\n           \"row_height\": \"low\",\n           \"header_style\": {\n               \"bold\": true,\n               \"lines\": 1\n           },\n           \"columns\": columns,\n           \"rows\": rows\n       });\n    }\n\n    // 5. 组装终极飞书 V2 卡片\n    return JSON.stringify({\n      \"schema\": \"2.0\",\n      \"config\": { \"update_multi\": true, \"wide_screen_mode\": true },\n      \"header\": {\n        \"title\": { \"tag\": \"plain_text\", \"content\": \"📊 智能数据中台洞察\" },\n        \"template\": \"blue\"\n      },\n      \"body\": {\n         \"direction\": \"vertical\",\n         \"elements\": elements\n      }\n    });\n  })()\n}}",
-        "uuid": "={{ $generateUuid() }}"
-      },
-      "type": "n8n-nodes-feishu-lite.feishuNode",
-      "typeVersion": 1,
-      "position": [
-        1872,
-        80
-      ],
-      "id": "a3fce8b8-a6a0-43fd-87ac-93650fc57414",
-      "name": "飞书推送数据分析结果1",
-      "credentials": {
-        "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
-        }
-      }
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.errorTrigger",
-      "typeVersion": 1,
-      "position": [
-        -608,
-        768
-      ],
-      "id": "5f1f515e-1b83-4172-9847-79d6401a76de",
-      "name": "错误兜底"
-    },
-    {
-      "parameters": {
-        "resource": "message",
-        "operation": "message:send",
-        "receive_id_type": "chat_id",
-        "receive_id": "oc_ef684cb3dc081c8e66b075712441d0f7",
-        "msg_type": "interactive",
-        "content": "={{ JSON.stringify({\n  config: { wide_screen_mode: true },\n  header: {\n    title: { tag: \"plain_text\", content: \"🚨 数据中台 Agent 运行异常告警\" },\n    template: \"red\"\n  },\n  elements: [\n    {\n      tag: \"div\",\n      text: {\n        tag: \"lark_md\",\n        content: \"**工作流名称**：智能数据中台\\n**报错节点**：\" + $json.execution.lastNodeExecuted + \"\\n**错误详情**：\" + $json.execution.error.message\n      }\n    },\n    {\n      tag: \"hr\"\n    },\n    {\n      tag: \"div\",\n      text: {\n        tag: \"lark_md\",\n        content: \"⚠️ 用户提问未能成功返回结果，请尽快登录 n8n 后台查看 `Executions` 日志并进行干预排查！\"\n      }\n    }\n  ]\n}) }}",
-        "uuid": "a0d69e20"
-      },
-      "type": "n8n-nodes-feishu-lite.feishuNode",
-      "typeVersion": 1,
-      "position": [
-        -400,
-        768
-      ],
-      "id": "b8b19d50-7b8b-4f52-aa46-307c86821b10",
-      "name": "飞书推送错误信息",
-      "credentials": {
-        "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// 把数组里的每一行，变成 n8n 里的独立一条数据\n// const data = $input.first().json.excelData;\n// if (!data || data.length === 0) return [];\n// return data.map(row => ({ json: row }));\nreturn $('图片生成判断').first().json.excelData;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1440,
-        368
-      ],
-      "id": "efc7f778-5598-442c-a4cb-dced27545f07",
-      "name": "分离表格数据"
-    },
-    {
-      "parameters": {
-        "operation": "xlsx",
-        "options": {
-          "fileName": "数据明细.xlsx"
-        }
-      },
-      "type": "n8n-nodes-base.convertToFile",
-      "typeVersion": 1.1,
-      "position": [
-        1648,
-        368
-      ],
-      "id": "233fbcfd-f6d2-4fe7-8c4f-eb371b751ee2",
-      "name": "Convert to File"
-    },
-    {
-      "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.hasChart }}",
-                    "rightValue": "true",
-                    "operator": {
-                      "type": "boolean",
-                      "operation": "true",
-                      "singleValue": true
-                    },
-                    "id": "d87d4120-51d3-4f5e-ba30-2a800a9aa556"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "画图分支"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "6c5a17ba-b400-479b-98f2-0557ac093254",
-                    "leftValue": "={{ $json.hasExcel }}",
-                    "rightValue": "true",
-                    "operator": {
-                      "type": "boolean",
-                      "operation": "true",
-                      "singleValue": true
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "表格分支"
-            }
-          ]
-        },
-        "options": {
-          "allMatchingOutputs": true
-        }
-      },
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
-      "position": [
-        976,
-        352
-      ],
-      "id": "a354584e-7aa8-47e9-a265-7da7f7f8a129",
-      "name": "Switch"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://open.feishu.cn/open-apis/im/v1/files",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $('获取授权token').first().json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "multipart-form-data",
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "file_type",
-              "value": "stream"
-            },
-            {
-              "name": "file_name",
-              "value": "=数据明细.xlsx"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        1856,
-        368
-      ],
-      "id": "89ee90d2-f84a-43d3-b825-013db0f3c424",
-      "name": "上传表格文件"
-    },
-    {
-      "parameters": {
-        "resource": "message",
-        "operation": "message:send",
-        "receive_id_type": "chat_id",
-        "receive_id": "oc_ef684cb3dc081c8e66b075712441d0f7",
-        "msg_type": "interactive",
-        "content": "={{\n  (function() {\n    // 1. 获取刚才分离出来的文字和表格数据\n    const cleanText = $node[\"分离文本和图表\"].json[\"cleanText\"] || \"暂无文字分析\";\n    const excelData = $node[\"分离文本和图表\"].json[\"excelData\"];\n\n    // 2. 基础卡片元素：先放上分析文字\n    let elements = [\n      {\n        \"tag\": \"div\",\n        \"text\": { \"tag\": \"lark_md\", \"content\": cleanText }\n      }\n    ];\n\n    // 3. 核心魔术：如果存在表格数据，动态构建飞书原生 Table 组件\n    if (excelData && excelData.length > 0) {\n       // 自动提取 JSON 的 Key 作为表头\n       const keys = Object.keys(excelData[0]);\n       const columns = keys.map(key => ({\n           \"name\": key,\n           \"display_name\": key,\n           \"data_type\": \"text\" // 统一设为 text 防报错\n       }));\n       \n       // 组装并追加表格组件\n       elements.push({\n           \"tag\": \"table\",\n           \"page_size\": 10, // 每页显示 5 行，带翻页功能\n           \"columns\": columns,\n           \"rows\": excelData.map(row => {\n               let safeRow = {};\n               // 飞书要求 row 里的值最好是字符串，强转一下防报错\n               for(let k in row) safeRow[k] = String(row[k]);\n               return safeRow;\n           })\n       });\n    }\n\n    // 4. 返回完整卡片 JSON\n    return JSON.stringify({\n      \"schema\": \"2.0\", // ⚠️ 极其关键：表格必须在 2.0 架构下运行\n      \"config\": { \"wide_screen_mode\": true },\n      \"header\": {\n        \"title\": { \"tag\": \"plain_text\", \"content\": \"📊 智能数据中台洞察\" },\n        \"template\": \"blue\"\n      },\n      \"body\": {\n         \"direction\": \"vertical\",\n         \"elements\": elements\n      }\n    });\n  })()\n}}"
-      },
-      "type": "n8n-nodes-feishu-lite.feishuNode",
-      "typeVersion": 1,
-      "position": [
-        2128,
-        368
-      ],
-      "id": "479c5e91-3990-4981-b4af-9709df345f64",
-      "name": "飞书推送文件",
-      "credentials": {
-        "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
-        }
-      }
-    },
     {
       "parameters": {
         "content": "",
@@ -579,27 +19,7 @@
     },
     {
       "parameters": {
-        "resource": "auth",
-        "operation": "auth:getAccessToken"
-      },
-      "type": "n8n-nodes-feishu-lite.feishuNode",
-      "typeVersion": 1,
-      "position": [
-        1200,
-        368
-      ],
-      "id": "644f1ab4-4fbf-4d40-b8bc-74a8835836bc",
-      "name": "获取授权token1",
-      "credentials": {
-        "feishuCredentialsApi": {
-          "id": "2e6d3KoLuLPg6phi",
-          "name": "数分agent"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const body = $json.body || {};\nlet userText = '';\n\ntry {\n  // 1. 获取飞书传来的原始 content 字符串并解析为 JSON 对象\n  const rawContent = body?.event?.message?.content || '{}';\n  const parsedContent = JSON.parse(rawContent);\n\n  // 2. 智能判断消息类型并提取文本\n  if (parsedContent.text) {\n    // 形态 A：普通纯文本消息\n    userText = parsedContent.text;\n  } else if (parsedContent.content && Array.isArray(parsedContent.content)) {\n    // 形态 B：富文本/带换行的消息 (Post 类型)\n    let extractedTexts = [];\n    \n    // 遍历飞书的富文本嵌套数组，把所有 tag 为 text 的内容抠出来\n    parsedContent.content.forEach(paragraph => {\n      if (Array.isArray(paragraph)) {\n        paragraph.forEach(element => {\n          // 剔除掉 @机器人的文本，只保留实际文字\n          if (element.tag === 'text' && element.text) {\n            extractedTexts.push(element.text);\n          }\n        });\n      }\n    });\n    // 把所有文字片段拼装回一段完整的长文本\n    userText = extractedTexts.join('');\n  }\n} catch (e) {\n  // 兜底方案：如果解析彻底失败，直接强行塞入原始字符\n  userText = body?.event?.message?.content || '';\n}\n\n// 去除首尾多余空格\nuserText = userText.trim();\n\n// 3. 提取其他必要参数 (群ID和追踪ID)\n// 这里的默认群ID作为本地测试的兜底保障\nconst chatId = body?.event?.message?.chat_id || 'oc_ef684cb3dc081c8e66b075712441d0f7';\nconst traceId = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;\n\n// 4. 将处理好的数据打包传给下一个节点\nreturn {\n  json: {\n    ...$json,\n    userText: userText,\n    chatId: chatId,\n    traceId: traceId\n  }\n};"
+        "jsCode": "const body = $json.body || {};\nlet userText = '';\n\ntry {\n  // 1. 获取飞书传来的原始 content 字符串并解析为 JSON 对象\n  const rawContent = body?.event?.message?.content || '{}';\n  const parsedContent = JSON.parse(rawContent);\n\n  // 2. 智能判断消息类型并提取文本\n  if (parsedContent.text) {\n    // 形态 A：普通纯文本消息\n    userText = parsedContent.text;\n  } else if (parsedContent.content && Array.isArray(parsedContent.content)) {\n    // 形态 B：富文本/带换行的消息 (Post 类型)\n    let extractedTexts = [];\n    \n    // 遍历飞书的富文本嵌套数组，把所有 tag 为 text 的内容抠出来\n    parsedContent.content.forEach(paragraph => {\n      if (Array.isArray(paragraph)) {\n        paragraph.forEach(element => {\n          // 剔除掉 @机器人的文本，只保留实际文字\n          if (element.tag === 'text' && element.text) {\n            extractedTexts.push(element.text);\n          }\n        });\n      }\n    });\n    // 把所有文字片段拼装回一段完整的长文本\n    userText = extractedTexts.join('');\n  }\n} catch (e) {\n  // 兜底方案：如果解析彻底失败，直接强行塞入原始字符\n  userText = body?.event?.message?.content || '';\n}\n\n// 去除首尾多余空格\nuserText = userText.trim();\n\n// 3. 提取其他必要参数 (群ID和追踪ID)\n// 这里的默认群ID作为本地测试的兜底保障\nconst chatId = body?.event?.message?.chat_id || 'YOUR_CHAT_ID';\nconst traceId = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;\n\n// 4. 将处理好的数据打包传给下一个节点\nreturn {\n  json: {\n    ...$json,\n    userText: userText,\n    chatId: chatId,\n    traceId: traceId\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -777,7 +197,7 @@
       ],
       "id": "9350c1fd-09ef-4bd6-8d4b-d7f20186c379",
       "name": "Webhook1",
-      "webhookId": "15c20030-d04f-49f2-905f-36b917dc04ec"
+      "webhookId": "YOUR_WEBHOOK_ID"
     },
     {
       "parameters": {
@@ -847,8 +267,8 @@
       "name": "OpenAI Chat Model1",
       "credentials": {
         "openAiApi": {
-          "id": "atJZfCSRj5qZl6Zv",
-          "name": "Q wen"
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "YOUR_OPENAI_CREDENTIAL_NAME"
         }
       }
     },
@@ -871,8 +291,8 @@
       "notesInFlow": false,
       "credentials": {
         "mySql": {
-          "id": "tzLFkyCS63QjXCko",
-          "name": "MySQL account"
+          "id": "YOUR_MYSQL_CREDENTIAL_ID",
+          "name": "YOUR_MYSQL_CREDENTIAL_NAME"
         }
       }
     },
@@ -881,7 +301,7 @@
         "resource": "message",
         "operation": "message:send",
         "receive_id_type": "chat_id",
-        "receive_id": "={{ $('任务预处理').first().json.chatId || 'oc_f5bed63fd8870bfe65681280e6fe607e' }}",
+        "receive_id": "={{ $('任务预处理').first().json.chatId || 'YOUR_CHAT_ID' }}",
         "content": "={{ JSON.stringify({\n  \"config\": { \"wide_screen_mode\": true },\n  \"header\": {\n    \"title\": { \"tag\": \"plain_text\", \"content\": \"📊 智能数据中台洞察\" },\n    \"template\": \"blue\"\n  },\n  \"elements\": [\n    {\n      \"tag\": \"div\",\n      \"text\": {\n        \"tag\": \"lark_md\",\n        \"content\": $node[\"分离文本和图表1\"].json[\"cleanText\"]\n      }\n    }\n  ]\n}) }}",
         "uuid": "={{ $generateUuid() }}"
       },
@@ -895,8 +315,8 @@
       "name": "飞书推送数据分析结果2",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "iaTj8HAh63r7q9hR",
-          "name": "飞书个人号"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -953,8 +373,8 @@
       "name": "获取授权token2",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "iaTj8HAh63r7q9hR",
-          "name": "飞书个人号"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -1057,7 +477,7 @@
         "resource": "message",
         "operation": "message:send",
         "receive_id_type": "chat_id",
-        "receive_id": "={{ $('任务预处理').first().json.chatId || 'oc_f5bed63fd8870bfe65681280e6fe607e' }}",
+        "receive_id": "={{ $('任务预处理').first().json.chatId || 'YOUR_CHAT_ID' }}",
         "msg_type": "interactive",
         "content": "={{\n  (function() {\n    // 1. 【防空处理】获取核心数据，如果为空则赋予默认值\n    const textData = $node[\"分离文本和图表1\"].json[\"cleanText\"] || \"数据处理中，未返回分析文本。\";\n    const excelData = $node[\"分离文本和图表1\"].json[\"excelData\"] || [];\n    \n    // 【防空处理】获取图片 Key。因为有可能没画图，如果节点不存在或没执行，用 try-catch 防止整个表达式崩溃\n    let imageKey = null;\n    try {\n        // 注意：这里的 '上传图片' 请替换为你实际将图表传给飞书并获取 image_key 的那个节点名称\n        imageKey = $node[\"上传图片1\"].json[\"data\"][\"image_key\"];\n    } catch(e) {\n        imageKey = null; \n    }\n\n    // 2. 基础组件：先放入“文字分析”\n    let elements = [\n      {\n        \"tag\": \"div\",\n        \"text\": { \"tag\": \"lark_md\", \"content\": textData }\n      }\n    ];\n\n    // 3. 智能注入：如果有图表（image_key），就在文字下面追加“图片组件”\n    if (imageKey) {\n        elements.push({\n            \"tag\": \"img\",\n            \"img_key\": imageKey,\n            \"alt\": { \"tag\": \"plain_text\", \"content\": \"数据可视化图表\" },\n            \"mode\": \"fit_horizontal\",\n            \"preview\": true\n        });\n    }\n\n    // 4. 智能注入：如果有明细数据（excelData），就在最下方追加“原生表格组件”\n    if (Array.isArray(excelData) && excelData.length > 0) {\n       // 提取表头\n       const keys = Object.keys(excelData[0]);\n       const columns = keys.map(key => ({\n           \"name\": key,\n           \"display_name\": key,\n           \"data_type\": \"text\" // 统一转为 text，防止飞书解析格式报错\n       }));\n       \n       // 【防空处理】遍历数据行，把所有 null 或数字强转为字符串，防止飞书渲染崩溃\n       const rows = excelData.map(row => {\n           let safeRow = {};\n           for(let k in row) safeRow[k] = String(row[k] || \"\");\n           return safeRow;\n       });\n\n       // 增加一条优雅的华丽分割线\n       elements.push({ \"tag\": \"hr\" });\n       \n       // 放入自带翻页功能的表格\n       elements.push({\n           \"tag\": \"table\",\n           \"page_size\": 10, // 每页 5 行，自带翻页按钮\n           \"row_height\": \"low\",\n           \"header_style\": {\n               \"bold\": true,\n               \"lines\": 1\n           },\n           \"columns\": columns,\n           \"rows\": rows\n       });\n    }\n\n    // 5. 组装终极飞书 V2 卡片\n    return JSON.stringify({\n      \"schema\": \"2.0\",\n      \"config\": { \"update_multi\": true, \"wide_screen_mode\": true },\n      \"header\": {\n        \"title\": { \"tag\": \"plain_text\", \"content\": \"📊 智能数据中台洞察\" },\n        \"template\": \"blue\"\n      },\n      \"body\": {\n         \"direction\": \"vertical\",\n         \"elements\": elements\n      }\n    });\n  })()\n}}",
         "uuid": "={{ $generateUuid() }}"
@@ -1072,8 +492,8 @@
       "name": "飞书推送数据分析结果3",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "iaTj8HAh63r7q9hR",
-          "name": "飞书个人号"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -1223,7 +643,7 @@
         "resource": "message",
         "operation": "message:send",
         "receive_id_type": "chat_id",
-        "receive_id": "={{ $('任务预处理').first().json.chatId || 'oc_f5bed63fd8870bfe65681280e6fe607e' }}",
+        "receive_id": "={{ $('任务预处理').first().json.chatId || 'YOUR_CHAT_ID' }}",
         "msg_type": "file",
         "content": "={\n  \"file_key\": \"{{ $json.data.file_key }}\"\n}"
       },
@@ -1237,8 +657,8 @@
       "name": "飞书推送文件1",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "iaTj8HAh63r7q9hR",
-          "name": "飞书个人号"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -1273,8 +693,8 @@
       "name": "获取授权token3",
       "credentials": {
         "feishuCredentialsApi": {
-          "id": "iaTj8HAh63r7q9hR",
-          "name": "飞书个人号"
+          "id": "YOUR_FEISHU_CREDENTIAL_ID",
+          "name": "YOUR_FEISHU_CREDENTIAL_NAME"
         }
       }
     },
@@ -1299,8 +719,8 @@
       "name": "OpenAI Chat Model2",
       "credentials": {
         "openAiApi": {
-          "id": "atJZfCSRj5qZl6Zv",
-          "name": "Q wen"
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "YOUR_OPENAI_CREDENTIAL_NAME"
         }
       }
     },
@@ -1325,8 +745,8 @@
       "name": "OpenAI Chat Model3",
       "credentials": {
         "openAiApi": {
-          "id": "atJZfCSRj5qZl6Zv",
-          "name": "Q wen"
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "YOUR_OPENAI_CREDENTIAL_NAME"
         }
       }
     },
@@ -1351,8 +771,8 @@
       "name": "OpenAI Chat Model4",
       "credentials": {
         "openAiApi": {
-          "id": "atJZfCSRj5qZl6Zv",
-          "name": "Q wen"
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "YOUR_OPENAI_CREDENTIAL_NAME"
         }
       }
     },
@@ -1377,8 +797,8 @@
       "name": "OpenAI Chat Model5",
       "credentials": {
         "openAiApi": {
-          "id": "atJZfCSRj5qZl6Zv",
-          "name": "Q wen"
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "YOUR_OPENAI_CREDENTIAL_NAME"
         }
       }
     },
@@ -1433,225 +853,6 @@
   ],
   "pinData": {},
   "connections": {
-    "Webhook": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Respond to Webhook1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Simple Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenAI Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute a SQL query in MySQL": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Respond to Webhook1": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "分离文本和图表",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "分离文本和图表": {
-      "main": [
-        [
-          {
-            "node": "图片生成判断",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "生成图片": {
-      "main": [
-        [
-          {
-            "node": "上传图片",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "获取授权token": {
-      "main": [
-        [
-          {
-            "node": "生成图片",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "上传图片": {
-      "main": [
-        [
-          {
-            "node": "飞书推送数据分析结果1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "图片生成判断": {
-      "main": [
-        [
-          {
-            "node": "Switch",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "飞书推送数据分析结果",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "错误兜底": {
-      "main": [
-        [
-          {
-            "node": "飞书推送错误信息",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "分离表格数据": {
-      "main": [
-        [
-          {
-            "node": "Convert to File",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Convert to File": {
-      "main": [
-        [
-          {
-            "node": "上传表格文件",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch": {
-      "main": [
-        [
-          {
-            "node": "获取授权token",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "获取授权token1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "上传表格文件": {
-      "main": [
-        [
-          {
-            "node": "飞书推送文件",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "获取授权token1": {
-      "main": [
-        [
-          {
-            "node": "分离表格数据",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "任务预处理": {
       "main": [
         [
@@ -2005,11 +1206,11 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "048b9fff-c55b-4eee-91c0-4f7544dc4265",
+  "versionId": "YOUR_VERSION_ID",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "e051e3c5a0ae543580ba70819ad50e21723e09fa5490e951d2e6147faded65e2"
+    "instanceId": "YOUR_INSTANCE_ID"
   },
-  "id": "Rbxrkg9Qk98jZvIQ",
+  "id": "YOUR_WORKFLOW_ID",
   "tags": []
 }
