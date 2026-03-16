@@ -3,17 +3,21 @@
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![LangChain](https://img.shields.io/badge/LangChain-Multi_Agent-1C3C3C.svg?logo=langchain&logoColor=white)](https://python.langchain.com/)
 [![LLM](https://img.shields.io/badge/LLM-Qwen_%7C_Zhipu-000000.svg?logo=openai&logoColor=white)](https://chatglm.cn/)
+
 [![n8n](https://img.shields.io/badge/n8n-Workflow_Automation-EA4B71.svg?logo=n8n&logoColor=white)](https://n8n.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF.svg?logo=github-actions&logoColor=white)](https://github.com/features/actions)
+
 [![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1.svg?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Polars](https://img.shields.io/badge/Polars-Fast_Dataframe-306482.svg?logo=polars&logoColor=white)](https://pola.rs/)
 [![Pandas](https://img.shields.io/badge/Pandas-Data_Processing-150458.svg?logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-Video_Processing-5C3EE8.svg?logo=opencv&logoColor=white)](https://opencv.org/)
 [![DrissionPage](https://img.shields.io/badge/Crawler-DrissionPage-FF6B6B.svg)](https://drissionpage.cn/)
+
 [![Feishu](https://img.shields.io/badge/Feishu-Open_API-00D6B9.svg?logo=lark&logoColor=white)](https://open.feishu.cn/)
 [![Chart.js](https://img.shields.io/badge/Chart.js-Visualization-FF6384.svg?logo=chartdotjs&logoColor=white)](https://www.chartjs.org/)
 [![Excel](https://img.shields.io/badge/Excel-Export-217346.svg?logo=microsoftexcel&logoColor=white)](https://www.microsoft.com/)
+
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Star History Chart](https://api.star-history.com/svg?repos=liuchaoqi-7/DA_Multi_Agent_Workflow&type=Date)](https://star-history.com/#liuchaoqi-7/DA_Multi_Agent_Workflow&Date)
 
