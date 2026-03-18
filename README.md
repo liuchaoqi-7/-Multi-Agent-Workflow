@@ -18,7 +18,7 @@
 [![Chart.js](https://img.shields.io/badge/Chart.js-Visualization-FF6384.svg?logo=chartdotjs&logoColor=white)](https://www.chartjs.org/)
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
+[![Star History Chart](https://api.star-history.com/svg?repos=<YOUR_USERNAME>/n8n-Multi_Agent_Workflow&type=Date)](https://star-history.com/#<YOUR_USERNAME>/n8n-Multi_Agent_Workflow&Date)
 
 > **电商全域数据治理与 Multi-Agent 分析中台**：基于 **n8n + LLM** 架构，实现多源电商数据 **ETL**、规范化**数仓分层建模** (DWD/ADS) 及飞书端**智能对话查询**闭环。
 
