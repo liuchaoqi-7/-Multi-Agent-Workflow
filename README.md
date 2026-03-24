@@ -38,6 +38,7 @@
 - **🎬 素材智能诊断（Whisper ASR + 千问大模型 + 极值截图 + 诊断报告）**
 - **🤖 多智能体协作架构（Supervisor Agent 路由分发 + 专业 Agent 协作 + Text-to-SQL + 自动可视化）**
 - **🏛️ 企业级数据治理（元数据管理 + 数据字典）**
+- **🏢 企业级Agent增强版（完整数据治理 + 权限控制 + RAG知识库 + 审计日志）**
 
 ### 性能指标
 
@@ -118,17 +119,31 @@
 
 ### 🤖 智能数据分析 Agent
 
-| 能力 | 说明 |
-|------|------|
-| **多智能体协作** | Supervisor Agent 路由分发 + 专业 Agent 协作处理 |
-| **智能路由分发** | 自动判断任务类型，路由到数据分析分支或直接回复分支 |
-| **Text-to-SQL** | 用户用自然语言提问，AI 自动生成 SQL 查询语句 |
-| **多轮对话记忆** | 基于 LangChain Memory Buffer，支持上下文关联追问 |
-| **智能图表生成** | 自动识别数据特征，生成可视化图表（QuickChart API） |
-| **报告增强** | 自动打磨分析报告，生成结构化洞察和建议 |
-| **QA 质检** | 统一输出质量，修复 Markdown 可读性，确保飞书兼容 |
-| **飞书交互卡片** | 推送包含分析结论 + 图表 + 数据表格的交互式消息 |
-| **错误自动告警** | 工作流异常时自动推送飞书告警消息 |
+| 能力 | 基础版 | 企业级增强版 |
+|------|--------|-------------|
+| **多智能体协作** | ✅ Supervisor + 2个专业Agent | ✅ Supervisor + 7个专业Agent |
+| **智能路由分发** | ✅ 2种路由策略 | ✅ 4种路由策略（+澄清/拒绝） |
+| **Text-to-SQL** | ✅ 基础DDL Schema | ✅ 完整DDL + 分析规划 + 查询预算守卫 |
+| **多轮对话记忆** | ✅ LangChain Memory Buffer | ✅ LangChain Memory Buffer |
+| **智能图表生成** | ✅ QuickChart API | ✅ QuickChart API |
+| **报告增强** | ✅ 结构化报告 | ✅ 结构化报告 + 结果有效性判断 |
+| **QA 质检** | ✅ 基础QA | ✅ 企业级QA + 审计日志 |
+| **飞书交互卡片** | ✅ 富文本消息 | ✅ 富文本 + 企业级卡片模板 |
+| **错误自动告警** | ✅ 异常告警 | ✅ 分级告警 + 空结果处理 |
+| **入口治理** | ❌ | ✅ Webhook校验 + 敏感词拦截 |
+| **权限控制** | ❌ | ✅ 管理员白名单 + 敏感字段拦截 |
+| **RAG知识库** | ❌ | ✅ 文档上传 + 向量检索 + Agent工具 |
+
+#### 企业级增强版核心能力
+
+| 治理维度 | 能力说明 |
+|----------|----------|
+| **🚀 入口治理** | Webhook合法性校验、统一traceId生成、敏感词拦截（drop/truncate/手机号导出等）、风控标签 |
+| **🔐 权限治理** | 管理员OpenID白名单、敏感字段自动识别、导出权限分级控制、数据范围限制（最大行数/回溯天数） |
+| **📋 路由治理** | 4种路由策略：sql_analysis（分析）、direct_reply（直答）、clarification（澄清）、reject（拒绝） |
+| **📊 分析治理** | 分析规划Agent（目标/指标/维度/策略）、查询预算守卫（最大行数/时间窗口）、结果有效性判断、空结果友好处理 |
+| **📚 RAG知识库** | 支持PDF/TXT/MD/DOCX/CSV/JSON上传、自动文档切块、内置向量存储、Agent工具调用检索 |
+| **📤 输出治理** | 统一QA质检、图表/Excel智能分离、飞书卡片/文件双通道推送、审计日志封装 |
 
 **典型应用场景**：
 - "帮我分析本月抖店 GMV TOP10 达人"
@@ -148,10 +163,236 @@
 ```
 
 > 💡 **数据分析 Agent 工作流截图**：
-![数据分析Agent工作流](docs/images/agent流程图.png)
+![数据分析Agent工作流](docs/images/data_analysis_agent.png)
 
+---
 
-### 多智能体架构设计
+### 🏢 企业级增强版 Agent (Enterprise Edition)
+
+在基础版之上，我们实现了**企业级增强版**，增加了完整的数据治理、权限控制、RAG知识库等能力：
+
+#### 企业级增强特性
+
+| 治理维度 | 基础版 | 企业级增强版 |
+|---------|--------|-------------|
+| **入口治理** | 简单消息解析 | Webhook合法性校验、统一traceId、风控标签、敏感词拦截 |
+| **路由治理** | 2种路由 (sql_analysis/direct_reply) | 4种路由 (+ clarification/reject) |
+| **权限治理** | 无 | 管理员白名单、敏感字段拦截、导出权限控制、数据范围限制 |
+| **分析治理** | 直接执行 | 分析规划、查询预算守卫、结果有效性判断、空结果处理 |
+| **RAG知识库** | 无 | 文档上传、自动切块、向量检索、Agent工具调用 |
+| **输出治理** | 基础QA | 统一QA、图表/Excel分离、飞书卡片/文件双通道、审计日志 |
+
+#### 企业级架构 Mermaid 图
+
+```mermaid
+flowchart TB
+    direction TB
+
+    %% 1. 飞书Webhook入口
+    subgraph Entry["🚀 企业级入口治理"]
+        direction TB
+        Webhook["Webhook触发"]
+        Governance["企业级入口治理
+• 合法性校验
+• 敏感词拦截
+• 统一traceId"]
+        RiskCheck["请求合法性判断"]
+        RiskReject["非法请求响应"]
+    end
+
+    %% 2. 会话与权限治理
+    subgraph Session["🔐 会话与权限治理"]
+        direction TB
+        SessionGov["会话与风险治理
+• 优先级识别
+• 风险等级评估"]
+        Permission["权限与数据范围校验
+• 管理员白名单
+• 敏感字段拦截"]
+        PermCheck["权限判断"]
+        PermReject["权限不足回复Agent"]
+    end
+
+    %% 3. 路由分发
+    subgraph Router["🎯 Enterprise Supervisor Agent"]
+        direction TB
+        Supervisor["Supervisor Agent
+• 任务拆解
+• 风控判断
+• 路由决策"]
+        RouteParse["解析路由结果"]
+        RouteSwitch["任务路由 (4分支)"]
+    end
+
+    %% 4. 四大分支
+    subgraph Branches["📋 四大处理分支"]
+        direction TB
+        
+        subgraph SQLBranch["📊 SQL分析分支"]
+            AnalysisPlan["分析规划Agent"]
+            ParsePlan["解析分析规划"]
+            QueryGuard["查询预算守卫"]
+            Analyst["Analyst Agent
+(Text-to-SQL)"]
+            MySQL["MySQL Tool"]
+            ResultCheck["分析结果评估"]
+            ResultValid["结果有效性判断"]
+            EmptyAgent["空结果回复Agent"]
+            Report["报告增强Agent"]
+            QA["QA Agent"]
+        end
+        
+        subgraph DirectBranch["💬 直接回复分支"]
+            DirectAgent["Direct Reply Agent
+• 知识库工具
+• 指标口径查询"]
+        end
+        
+        subgraph ClarifyBranch["❓ 澄清分支"]
+            ClarifyAgent["澄清问题Agent
+• 生成澄清问题
+• 提供示例"]
+        end
+        
+        subgraph RejectBranch["🚫 拒绝分支"]
+            RejectAgent["拒绝回复Agent
+• 说明拒绝原因
+• 提供替代方案"]
+        end
+    end
+
+    %% 5. 输出治理
+    subgraph Output["📤 输出治理与推送"]
+        direction TB
+        Split["分离文本和图表"]
+        ChartCheck["图片生成判断"]
+        QuickChart["QuickChart生成"]
+        FeishuImg["飞书图片上传"]
+        ExcelGen["Excel生成"]
+        FeishuFile["飞书文件上传"]
+        CardPush["飞书卡片推送"]
+        Audit["审计日志封装"]
+    end
+
+    %% 6. RAG知识库
+    subgraph RAG["📚 RAG知识库模块"]
+        direction TB
+        Form["知识库上传表单"]
+        Normalize["标准化知识库文件"]
+        Loader["知识库文档加载器"]
+        Splitter["知识库切块器"]
+        VectorStore["写入内置向量库"]
+        Retrieve["知识库检索工具"]
+    end
+
+    %% 流程连线 - 入口治理
+    Webhook --> Governance
+    Governance --> RiskCheck
+    RiskCheck -->|非法| RiskReject
+    RiskCheck -->|合法| SessionGov
+
+    %% 会话与权限
+    SessionGov --> Permission
+    Permission --> PermCheck
+    PermCheck -->|无权限| PermReject
+    PermCheck -->|有权限| Supervisor
+
+    %% 路由分发
+    Supervisor --> RouteParse
+    RouteParse --> RouteSwitch
+
+    %% 四大分支
+    RouteSwitch -->|sql_analysis| SQLBranch
+    RouteSwitch -->|direct_reply| DirectBranch
+    RouteSwitch -->|clarification| ClarifyBranch
+    RouteSwitch -->|reject| RejectBranch
+
+    %% SQL分支内部
+    AnalysisPlan --> ParsePlan
+    ParsePlan --> QueryGuard
+    QueryGuard --> Analyst
+    Analyst --> MySQL
+    MySQL --> ResultCheck
+    ResultCheck --> ResultValid
+    ResultValid -->|无效| EmptyAgent
+    ResultValid -->|有效| Report
+    Report --> QA
+
+    %% 输出治理
+    QA --> Split
+    DirectAgent --> Split
+    ClarifyAgent --> Split
+    RejectAgent --> Split
+    EmptyAgent --> Split
+    PermReject --> Split
+    
+    Split --> ChartCheck
+    ChartCheck -->|有图表| QuickChart
+    QuickChart --> FeishuImg
+    ChartCheck -->|有Excel| ExcelGen
+    ExcelGen --> FeishuFile
+    
+    FeishuImg --> CardPush
+    FeishuFile --> CardPush
+    Split -->|纯文本| CardPush
+    CardPush --> Audit
+
+    %% RAG知识库
+    Form --> Normalize
+    Normalize --> Loader
+    Loader --> Splitter
+    Splitter --> VectorStore
+    VectorStore --> Retrieve
+    Retrieve -.->|工具调用| DirectAgent
+    Retrieve -.->|工具调用| Analyst
+
+    %% 样式
+    style Entry fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style Session fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Router fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style Branches fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style Output fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style RAG fill:#e0f2f1,stroke:#00796b,stroke-width:2px
+```
+
+#### 企业级路由策略
+
+```javascript
+// Enterprise Supervisor Agent 路由规则
+{
+  "route": "sql_analysis | direct_reply | clarification | reject",
+  "reason": "路由原因",
+  "needChart": true,
+  "needExcel": false,
+  "sqlFocus": "查询重点",
+  "riskLevel": "low | medium | high",
+  "requiredDataDomain": ["ads", "dwd"],
+  "missingInfo": ["缺失条件"],
+  "responseStyle": "standard | executive"
+}
+
+// 路由策略：
+// 1. 数据查询/统计/趋势/对比/ROI/GMV -> sql_analysis
+// 2. 信息不足无法安全推断 -> clarification
+// 3. 寒暄/流程说明/FAQ -> direct_reply
+// 4. 越权/敏感导出/高风险 -> reject
+```
+
+#### 核心 Agent 职责对比
+
+| Agent | 基础版 | 企业级增强版 |
+|-------|--------|-------------|
+| **Supervisor Agent** | 简单路由 | 增加风控判断、风险等级、响应风格 |
+| **Analyst Agent** | Text-to-SQL | 增加分析规划、查询预算守卫、DDL Schema |
+| **Direct Reply Agent** | 简单回复 | 集成RAG知识库检索、指标口径查询 |
+| **新增: 澄清Agent** | ❌ | 信息不足时生成澄清问题 |
+| **新增: 拒绝Agent** | ❌ | 高风险请求礼貌拒绝 |
+| **新增: 空结果Agent** | ❌ | SQL失败/结果为空时友好回复 |
+| **新增: 权限回复Agent** | ❌ | 敏感字段越权时专业回复 |
+
+---
+
+### 基础版多智能体架构设计
 
 ```mermaid
 flowchart TB
@@ -560,8 +801,9 @@ n8n-Multi_Agent_Workflow/
 │       └── n8n必要凭证.               # n8n凭证管理截图
 |
 ├── n8n_Workflow/              # n8n 工作流 JSON
-│   ├── 数据中台 - 完整ETL工作流Agent.json   # 主ETL工作流
-│   ├── 数据分析Agent.json                 # 🤖 AI数据分析Agent（Text-to-SQL）
+│   ├── 数据中台 - 完整ETL工作流Agent.json       # 主ETL工作流
+│   ├── 数据分析Agent.json                     # 🤖 AI数据分析Agent（Text-to-SQL）基础版
+│   ├── 数据分析Agent_增强版.json               # 🏢 企业级增强版（推荐）
 │   ├── [ETL-WeChat] 订单+售后+结算同步.json
 │   └── [MySQL-Feishu] 通用Sync逻辑.json
 │
